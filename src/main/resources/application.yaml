@@ -1,0 +1,8 @@
+spring:
+    datasource:
+        url: jdbc:postgresql://localhost:5433/mandatory_model_in_dbms
+        username: postgres
+        password: pass
+    jpa:
+        hibernate:
+            ddl-auto: validate
