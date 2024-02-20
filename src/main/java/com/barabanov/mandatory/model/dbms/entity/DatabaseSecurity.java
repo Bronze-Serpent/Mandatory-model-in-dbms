@@ -1,12 +1,19 @@
 package com.barabanov.mandatory.model.dbms.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
+@Setter
+@Getter
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "database_security")
 public class DatabaseSecurity extends AbstractEntity<Long>
 {
     private String name;
@@ -21,9 +28,10 @@ public class DatabaseSecurity extends AbstractEntity<Long>
     private DbmsAdmin owner;
 
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(name = "database_administrator",
             joinColumns = {@JoinColumn(name = "database_id")},
             inverseJoinColumns = {@JoinColumn(name = "admin_id")})
-    private List<DbmsAdmin> admins;
+    private List<DbmsAdmin> admins = new ArrayList<>();
 }

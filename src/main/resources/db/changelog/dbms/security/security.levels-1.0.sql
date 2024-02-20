@@ -42,7 +42,7 @@ CREATE TABLE tuple_security
 );
 
 --changeset barabanov:attribute_security
-CREATE TABLE attribute_security
+CREATE TABLE value_security
 (
     id              BIGSERIAL       PRIMARY KEY,
     tuple_id        BIGINT          REFERENCES tuple_security(id),
