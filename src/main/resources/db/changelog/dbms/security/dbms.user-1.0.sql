@@ -5,5 +5,5 @@ CREATE TABLE dbms_user
 (
     id              BIGSERIAL        PRIMARY KEY,
     name            VARCHAR(64)      UNIQUE,
-    security_level  SECURITY_LEVEL   NOT NULL
+    security_level  VARCHAR(64)  NOT NULL
 );

@@ -1,7 +1,5 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/dbms/security/securiry.level.type-1.0.sql
-  - include:
       file: db/changelog/dbms/security/security.levels-1.0.sql
   - include:
       file: db/changelog/dbms/security/dbms.user-1.0.sql

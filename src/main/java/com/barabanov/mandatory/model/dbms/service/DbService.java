@@ -1,11 +1,13 @@
 package com.barabanov.mandatory.model.dbms.service;
 
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
+import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;
 import com.barabanov.mandatory.model.dbms.entity.DatabaseSecurity;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.entity.TableSecurity;
 import com.barabanov.mandatory.model.dbms.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.exception.TableNotFoundException;
+import com.barabanov.mandatory.model.dbms.repository.ColumnSecurityRepository;
 import com.barabanov.mandatory.model.dbms.repository.DbManager;
 import com.barabanov.mandatory.model.dbms.repository.DbSecurityRepository;
 import com.barabanov.mandatory.model.dbms.repository.TableSecurityRepository;
@@ -24,6 +26,7 @@ public class DbService
     private final DbManager dbManager;
     private final DbSecurityRepository dbSecurityRepository;
     private final TableSecurityRepository tableSecurityRepository;
+    private final ColumnSecurityRepository columnSecurityRepository;
 
 
     public void createDb(String dbName, SecurityLevel securityLevel)
@@ -35,6 +38,11 @@ public class DbService
                 .build();
 
         dbSecurityRepository.save(createdDbSecurity);
+    }
+
+    public void createDb(String dbName)
+    {
+        // TODO: 21.02.2024 получать уровень секретности пользователя и устанавливать его для создаваемой БД
     }
 
 
@@ -107,5 +115,21 @@ public class DbService
 
         tableSecurityRepository.delete(tableSecurity);
     }
-    
+
+
+    private void createColumnSecurity(TableSecurity tableSecurity, List<ColumnDesc> columnsDesc)
+    {
+        for (ColumnDesc columnDesc : columnsDesc)
+        {
+            ColumnSecurity columnSecurity = new ColumnSecurity();
+            columnSecurity.setName(columnDesc.getName());
+            columnSecurity.setTableSecurity(tableSecurity);
+            if (columnDesc.getSecurityLevel() == null)
+                columnSecurity.setSecurityLevel(tableSecurity.getSecurityLevel());
+            else
+                columnSecurity.setSecurityLevel(columnDesc.getSecurityLevel());
+
+            columnSecurityRepository.save(columnSecurity);
+        }
+    }
 }

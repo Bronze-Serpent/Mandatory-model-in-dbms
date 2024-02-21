@@ -1,17 +1,14 @@
 package com.barabanov.mandatory.model.dbms.repository;
 
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
-import com.barabanov.mandatory.model.dbms.exception.CanNotCloseConnection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -40,14 +37,16 @@ public class DbManager
 
         StringBuilder sqlBuilder = new StringBuilder("CREATE TABLE " + tableName);
         sqlBuilder.append("\n(\n");
-        for (ColumnDesc columnDesc : columnsDesc)
+        for (int i = 0; i < columnsDesc.size(); i++)
         {
-            sqlBuilder.append(columnDesc.getName())
+            sqlBuilder.append(columnsDesc.get(i).getName())
                     .append(" ")
-                    .append(columnDesc.getType())
+                    .append(columnsDesc.get(i).getType())
                     .append(" ")
-                    .append(columnDesc.getConstraints())
-                    .append(",\n");
+                    .append(String.join(" ", columnsDesc.get(i).getConstraints()));
+
+            if (i != columnsDesc.size() - 1)
+                sqlBuilder.append(",\n");
         }
         sqlBuilder.append(");");
 
@@ -67,6 +66,7 @@ public class DbManager
     }
 
 
+    @SuppressWarnings("ConstantConditions")
     private JdbcTemplate createJdbcTemplateFor(String dbName)
     {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
@@ -85,17 +85,18 @@ public class DbManager
     }
 
 
+    /**
+     * Предполагается, что в объекте JdbcTemplate будет объект именно SingleConnectionDataSource
+     * т.к. у него всего одно соединение, которое и закрывает метод.
+     *
+     * Можно у объекта DataSource получить Connection и закрыть его. С SingleConnectionDataSource работа метода
+     * будет аналогична, но в других реализациях поведение не будет являться ожидаемым, поэтому используется явное приведение типа.
+     */
+    @SuppressWarnings("ConstantConditions")
     private void closeConnection(JdbcTemplate template)
     {
-        try {
-            DataSource dataSource = template.getDataSource();
-            Connection connection = dataSource.getConnection();
+        SingleConnectionDataSource dataSource = (SingleConnectionDataSource) template.getDataSource();
 
-            connection.close();
-
-        } catch (SQLException e)
-        {
-            throw new CanNotCloseConnection(e);
-        }
+        dataSource.close();
     }
 }
