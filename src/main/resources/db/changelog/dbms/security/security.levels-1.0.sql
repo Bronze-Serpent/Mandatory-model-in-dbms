@@ -45,7 +45,7 @@ CREATE TABLE tuple_security
 CREATE TABLE value_security
 (
     id              BIGSERIAL       PRIMARY KEY,
-    tuple_id        BIGINT          REFERENCES tuple_security(id),
+    tuple_id        BIGINT,         -- id строки в таблице, для значения в которой задаётся уровень безопасности
     column_id       BIGINT          REFERENCES column_security(id),
     security_level  VARCHAR(64)  NOT NULL,
 

@@ -1,16 +1,13 @@
 package com.barabanov.mandatory.model.dbms.service;
 
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
-import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;
-import com.barabanov.mandatory.model.dbms.entity.DatabaseSecurity;
-import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
-import com.barabanov.mandatory.model.dbms.entity.TableSecurity;
+import com.barabanov.mandatory.model.dbms.dto.ParsedSecretSqlDto;
+import com.barabanov.mandatory.model.dbms.dto.ValueSecurityInfo;
+import com.barabanov.mandatory.model.dbms.entity.*;
+import com.barabanov.mandatory.model.dbms.exception.ColumnNotFoundException;
 import com.barabanov.mandatory.model.dbms.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.exception.TableNotFoundException;
-import com.barabanov.mandatory.model.dbms.repository.ColumnSecurityRepository;
-import com.barabanov.mandatory.model.dbms.repository.DbManager;
-import com.barabanov.mandatory.model.dbms.repository.DbSecurityRepository;
-import com.barabanov.mandatory.model.dbms.repository.TableSecurityRepository;
+import com.barabanov.mandatory.model.dbms.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,15 +20,47 @@ import java.util.List;
 @Service
 public class DbService
 {
-    private final DbManager dbManager;
+    private final DynamicDbManager dynamicDbManager;
     private final DbSecurityRepository dbSecurityRepository;
     private final TableSecurityRepository tableSecurityRepository;
     private final ColumnSecurityRepository columnSecurityRepository;
+    private final TupleSecurityRepository tupleSecurityRepository;
+    private final ValueSecurityRepository valueSecurityRepository;
+    private final SecuritySqlParser securitySqlParser;
+
+
+    private void insertIntoDb(Long dbId, String securitySql)
+    {
+        ParsedSecretSqlDto parsedSecretSqlDto = securitySqlParser.parse(securitySql);
+
+        DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
+                .orElseThrow(() -> new DbNotFoundException(dbId));
+        TableSecurity tableSecurity = tableSecurityRepository.findByName(parsedSecretSqlDto.getTableName())
+                .orElseThrow(() -> new TableNotFoundException(null, parsedSecretSqlDto.getTableName()));
+
+        Long insertedTupleId = dynamicDbManager.insertTuple(dbSecurity.getName(), parsedSecretSqlDto.getSql());
+
+        SecurityLevel rowSecurityLvl = parsedSecretSqlDto.getRowSecurityLvl();
+        if (rowSecurityLvl != null)
+            tupleSecurityRepository.save(new TupleSecurity(insertedTupleId, tableSecurity, rowSecurityLvl));
+
+        for (ValueSecurityInfo valueSecurityInfo : parsedSecretSqlDto.getValueSecurityInfoList())
+        {
+            ColumnSecurity columnSecurity = columnSecurityRepository.findByName(valueSecurityInfo.getColumnName())
+                    .orElseThrow(() -> new ColumnNotFoundException(null, valueSecurityInfo.getColumnName()));
+            ValueSecurity valueSecurity = new ValueSecurity(
+                    insertedTupleId,
+                    columnSecurity,
+                    valueSecurityInfo.getSecurityLevel()
+            );
+            valueSecurityRepository.save(valueSecurity);
+        }
+    }
 
 
     public void createDb(String dbName, SecurityLevel securityLevel)
     {
-        dbManager.createDb(dbName);
+        dynamicDbManager.createDb(dbName);
         DatabaseSecurity createdDbSecurity = DatabaseSecurity.builder()
                 .name(dbName)
                 .securityLevel(securityLevel)
@@ -40,16 +69,19 @@ public class DbService
         dbSecurityRepository.save(createdDbSecurity);
     }
 
+
     public void createDb(String dbName)
     {
-        // TODO: 21.02.2024 получать уровень секретности пользователя и устанавливать его для создаваемой БД
+        createDb(dbName, SecurityLevel.OF_PARTICULAR_IMPORTANCE);
     }
 
 
-    public void changeDbSecLvl(Long dbId, SecurityLevel securityLevel)
+    public void changeDbSecLvl(Long dbId, SecurityLevel newSecLevel)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));
+
+        dbSecurity.setSecurityLevel(newSecLevel);
         dbSecurityRepository.flush();
     }
 
@@ -59,13 +91,11 @@ public class DbService
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));
 
-        dbManager.dropDb(dbSecurity.getName());
+        dynamicDbManager.dropDb(dbSecurity.getName());
         dbSecurityRepository.delete(dbSecurity);
     }
 
 
-    // TODO: 21.02.2024 Сделать аналогичные методы для создания таблиц / баз данных, но без securityLevel.
-    //  В таком случае назначать securityLvl равным securityLvl родителя, а для БД - создателя.
     public void createTableInDb(Long dbId,
                                 String tableName,
                                 SecurityLevel securityLevel,
@@ -74,7 +104,7 @@ public class DbService
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));
 
-        dbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
+        dynamicDbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
         TableSecurity tableSecurity = TableSecurity.builder()
                 .name(tableName)
                 .databaseSecurity(dbSecurity)
@@ -92,7 +122,7 @@ public class DbService
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));
 
-        dbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
+        dynamicDbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
         TableSecurity tableSecurity = TableSecurity.builder()
                 .name(tableName)
                 .databaseSecurity(dbSecurity)
@@ -103,17 +133,34 @@ public class DbService
     }
 
 
-    public void dropTableInDb(Long dbId, Long tableId)
+    public void dropTableInDb(Long tableId)
     {
-        DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId));
-
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
-                .orElseThrow(() -> new TableNotFoundException(dbId, tableId));
+                .orElseThrow(() -> new TableNotFoundException(tableId, null));
 
-        dbManager.dropTable(dbSecurity.getName(), tableSecurity.getName());
+        dynamicDbManager.dropTable(tableSecurity.getDatabaseSecurity().getName(), tableSecurity.getName());
 
         tableSecurityRepository.delete(tableSecurity);
+    }
+
+
+    public void changeTableSecLvl(Long tableId, SecurityLevel newSecLevel)
+    {
+        TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
+                .orElseThrow(() -> new TableNotFoundException(tableId, null));
+
+        tableSecurity.setSecurityLevel(newSecLevel);
+        tableSecurityRepository.flush();
+    }
+
+
+    public void changeColumnSecLvl(Long columnId, SecurityLevel newSecLvl)
+    {
+        ColumnSecurity columnSecurity = columnSecurityRepository.findById(columnId)
+                .orElseThrow(() -> new ColumnNotFoundException(columnId, null));
+
+        columnSecurity.setSecurityLevel(newSecLvl);
+        columnSecurityRepository.flush();
     }
 
 

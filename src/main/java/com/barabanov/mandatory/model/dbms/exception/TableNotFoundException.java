@@ -6,13 +6,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TableNotFoundException extends RuntimeException
 {
-    private final Long dbId;
     private final Long tableId;
 
+    private final String tableName;
 
     @Override
     public String toString()
     {
-        return "Table with id: " + tableId + " not found in database with id: " + dbId;
+        String message = "Table with ";
+        if (tableId != null)
+            message += "id: " + tableId + " ";
+        if (tableName != null)
+            message += "columnName: " + tableName;
+        message += "not found.";
+
+        return message;
     }
 }

@@ -1,9 +1,9 @@
-package com.barabanov.mandatory.model.dbms.db.repository;
+package com.barabanov.mandatory.model.dbms.db;
 
 import com.barabanov.mandatory.model.dbms.db.ContainerTestBase;
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
-import com.barabanov.mandatory.model.dbms.repository.DbManager;
+import com.barabanov.mandatory.model.dbms.repository.DynamicDbManager;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -22,9 +22,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException
 
 
 @RequiredArgsConstructor
-public class DbManagerTest extends ContainerTestBase
+public class DynamicDbManagerTest extends ContainerTestBase
 {
-    private final DbManager dbManager;
+    private final DynamicDbManager dynamicDbManager;
 
     private final EntityManager entityManager;
     private final Environment environment;
@@ -35,7 +35,7 @@ public class DbManagerTest extends ContainerTestBase
     {
         String dbName = "creation_db_test";
 
-        dbManager.createDb(dbName);
+        dynamicDbManager.createDb(dbName);
 
         Integer foundedDb = (Integer) entityManager.createNativeQuery(
                 " SELECT COUNT(*) FROM pg_database WHERE datname = '" + dbName + "'",
@@ -52,8 +52,8 @@ public class DbManagerTest extends ContainerTestBase
     {
         String dbName = "drop_db_test";
 
-        dbManager.createDb(dbName);
-        dbManager.dropDb(dbName);
+        dynamicDbManager.createDb(dbName);
+        dynamicDbManager.dropDb(dbName);
 
         Integer foundedDb = (Integer) entityManager.createNativeQuery(
                         " SELECT COUNT(*) FROM pg_database WHERE datname = '" + dbName + "'",
@@ -71,8 +71,8 @@ public class DbManagerTest extends ContainerTestBase
         String dbName = "db_to_creation_template_test";
         String tableName = "template_test";
 
-        dbManager.createDb(dbName);
-        dbManager.createTable(dbName, tableName, Collections.emptyList());
+        dynamicDbManager.createDb(dbName);
+        dynamicDbManager.createTable(dbName, tableName, Collections.emptyList());
 
         JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
         SqlRowSet sqlRowSet = dynamicTemplate.query(
@@ -92,9 +92,9 @@ public class DbManagerTest extends ContainerTestBase
         String dbName = "db_to_drop_template_test";
         String tableName = "template_test";
 
-        dbManager.createDb(dbName);
-        dbManager.createTable(dbName, tableName, Collections.emptyList());
-        dbManager.dropTable(dbName, tableName);
+        dynamicDbManager.createDb(dbName);
+        dynamicDbManager.createTable(dbName, tableName, Collections.emptyList());
+        dynamicDbManager.dropTable(dbName, tableName);
 
         JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
         SqlRowSet sqlRowSet = dynamicTemplate.query(
@@ -120,8 +120,8 @@ public class DbManagerTest extends ContainerTestBase
                 "price", new ColumnDesc("price", "INTEGER", Collections.emptyList(), SecurityLevel.OF_PARTICULAR_IMPORTANCE)
         );
 
-        dbManager.createDb(dbName);
-        dbManager.createTable(
+        dynamicDbManager.createDb(dbName);
+        dynamicDbManager.createTable(
                 dbName,
                 tableName,
                 columnsDesc.values()

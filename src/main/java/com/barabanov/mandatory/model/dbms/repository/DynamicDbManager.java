@@ -4,30 +4,36 @@ import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
 @Service
-public class DbManager
+public class DynamicDbManager
 {
+    private final static String RETURN_ID_COMMAND = "RETURNING id";
     private final JdbcTemplate jdbcTemplate;
 
     private final Environment environment;
 
-
-    public void createDb(String dbName)
+    
+    @SuppressWarnings("ConstantConditions")
+    public Long insertTuple(String dbName, String insertSql)
     {
-        jdbcTemplate.execute("CREATE DATABASE " + dbName);
-    }
+        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
 
-    public void dropDb(String dbName)
-    {
-        jdbcTemplate.execute("DROP DATABASE " + dbName);
+        String insertSqlReturningId = insertSql.replace(';', ' ') + RETURN_ID_COMMAND + ';';
+
+        SqlRowSet createdIdRowSet = dynamicTemplate.query(insertSqlReturningId, new SqlRowSetResultSetExtractor());
+        closeConnection(dynamicTemplate);
+
+        createdIdRowSet.next();
+        return createdIdRowSet.getLong(0);
     }
 
 
@@ -63,6 +69,16 @@ public class DbManager
         dynamicTemplate.execute("DROP TABLE " + tableName + ";");
 
         closeConnection(dynamicTemplate);
+    }
+
+    public void createDb(String dbName)
+    {
+        jdbcTemplate.execute("CREATE DATABASE " + dbName);
+    }
+
+    public void dropDb(String dbName)
+    {
+        jdbcTemplate.execute("DROP DATABASE " + dbName);
     }
 
 

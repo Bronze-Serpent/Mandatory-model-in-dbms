@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+@Setter
 @Getter
 @SuperBuilder
 @AllArgsConstructor
