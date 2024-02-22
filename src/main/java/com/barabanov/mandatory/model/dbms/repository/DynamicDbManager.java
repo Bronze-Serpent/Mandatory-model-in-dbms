@@ -16,18 +16,18 @@ import java.util.List;
 @Service
 public class DynamicDbManager
 {
-    private final static String RETURN_ID_COMMAND = "RETURNING id";
+    private final static String RETURN_ID_SQL_COMMAND = "RETURNING id";
     private final JdbcTemplate jdbcTemplate;
 
     private final Environment environment;
 
-    
+
     @SuppressWarnings("ConstantConditions")
     public Long insertTuple(String dbName, String insertSql)
     {
         JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
 
-        String insertSqlReturningId = insertSql.replace(';', ' ') + RETURN_ID_COMMAND + ';';
+        String insertSqlReturningId = insertSql.replace(';', ' ') + RETURN_ID_SQL_COMMAND + ';';
 
         SqlRowSet createdIdRowSet = dynamicTemplate.query(insertSqlReturningId, new SqlRowSetResultSetExtractor());
         closeConnection(dynamicTemplate);

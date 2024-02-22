@@ -14,7 +14,9 @@ public class SecuritySqlParser
 {
 
     private static final String SECURITY_SQL_SPLIT_REGEX = "\\s*[(,)\\s]+\\s*";
-    private static final String SECURITY_SQL_WORD_PATTERN = "-\\s*[a-zA-Z_]+";
+    private static final String SECURITY_SQL_WORD_PATTERN = "\\s*-{1,2}\\s*[a-zA-Z_]+";
+    private static final String VALUE_SECURITY_IDENTIFICATION = "-";
+    private static final String TUPLE_SECURITY_IDENTIFICATION = "--";
 
 
     public ParsedSecretSqlDto parse(String securitySql)
@@ -25,8 +27,21 @@ public class SecuritySqlParser
                 words[2],
                 getCleanedSql(securitySql),
                 getValueSecurityList(getColumnNames(words), words),
-                null
+                getTupleSecurity(words)
         );
+    }
+
+
+    private SecurityLevel getTupleSecurity(String[] securitySqlWords)
+    {
+        if (securitySqlWords[securitySqlWords.length - 2].equals(TUPLE_SECURITY_IDENTIFICATION))
+        {
+            String securityLvlString = securitySqlWords[securitySqlWords.length - 1]
+                    .replaceAll(";", "");
+            return SecurityLevel.fromString(securityLvlString);
+        }
+
+        return null;
     }
 
 
@@ -40,11 +55,11 @@ public class SecuritySqlParser
     {
         int colIdx = 0;
         List<ValueSecurityInfo> valueSecurityInfos = new ArrayList<>();
-        int valIdx = 3 + columnNames.size();
+        int valIdx = 4 + columnNames.size();
 
         while (valIdx < securitySqlWords.length - 1)
         {
-            if (!securitySqlWords[valIdx + 1]. equals("-"))
+            if (!securitySqlWords[valIdx + 1].equals(VALUE_SECURITY_IDENTIFICATION))
             {
                 valIdx++;
                 colIdx++;

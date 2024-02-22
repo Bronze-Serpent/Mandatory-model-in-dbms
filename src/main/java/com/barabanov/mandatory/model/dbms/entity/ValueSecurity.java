@@ -1,8 +1,6 @@
 package com.barabanov.mandatory.model.dbms.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,5 +19,6 @@ public class ValueSecurity extends AbstractEntity<Long>
     @JoinColumn(name = "column_id")
     private ColumnSecurity columnSecurity;
 
+    @Enumerated(EnumType.STRING)
     SecurityLevel securityLevel;
 }

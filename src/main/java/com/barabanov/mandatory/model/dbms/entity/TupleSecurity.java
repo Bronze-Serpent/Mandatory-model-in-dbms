@@ -1,8 +1,6 @@
 package com.barabanov.mandatory.model.dbms.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,5 +20,6 @@ public class TupleSecurity extends AbstractEntity<Long>
     @JoinColumn(name = "table_id")
     private TableSecurity tableSecurity;
 
+    @Enumerated(EnumType.STRING)
     private SecurityLevel securityLevel;
 }
