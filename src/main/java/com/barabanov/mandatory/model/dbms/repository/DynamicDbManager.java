@@ -17,9 +17,19 @@ import java.util.List;
 public class DynamicDbManager
 {
     private final static String RETURN_ID_SQL_COMMAND = "RETURNING id";
-    private final JdbcTemplate jdbcTemplate;
 
+    private final JdbcTemplate jdbcTemplate;
     private final Environment environment;
+
+
+    public SqlRowSet executeSqlInDb(String dbName, String sql)
+    {
+        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
+        SqlRowSet rowSet = dynamicTemplate.query(sql, new SqlRowSetResultSetExtractor());
+        closeConnection(dynamicTemplate);
+
+        return rowSet;
+    }
 
 
     @SuppressWarnings("ConstantConditions")
@@ -33,14 +43,12 @@ public class DynamicDbManager
         closeConnection(dynamicTemplate);
 
         createdIdRowSet.next();
-        return createdIdRowSet.getLong(0);
+        return createdIdRowSet.getLong(1);
     }
 
 
     public void createTable(String dbName, String tableName, List<ColumnDesc> columnsDesc)
     {
-        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
-
         StringBuilder sqlBuilder = new StringBuilder("CREATE TABLE " + tableName);
         sqlBuilder.append("\n(\n");
         for (int i = 0; i < columnsDesc.size(); i++)
@@ -56,8 +64,8 @@ public class DynamicDbManager
         }
         sqlBuilder.append(");");
 
+        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
         dynamicTemplate.execute(sqlBuilder.toString());
-
         closeConnection(dynamicTemplate);
     }
 
@@ -73,12 +81,12 @@ public class DynamicDbManager
 
     public void createDb(String dbName)
     {
-        jdbcTemplate.execute("CREATE DATABASE " + dbName);
+        jdbcTemplate.execute("CREATE DATABASE " + dbName + ";");
     }
 
     public void dropDb(String dbName)
     {
-        jdbcTemplate.execute("DROP DATABASE " + dbName);
+        jdbcTemplate.execute("DROP DATABASE " + dbName + ";");
     }
 
 
@@ -92,7 +100,6 @@ public class DynamicDbManager
         ds.setPassword(environment.getProperty("spring.datasource.password"));
 
         String currUrl = environment.getProperty("spring.datasource.url");
-
         int lastSlashIndex = currUrl.lastIndexOf('/');
         String newUrl = currUrl.substring(0, lastSlashIndex + 1) + dbName;
         ds.setUrl(newUrl);

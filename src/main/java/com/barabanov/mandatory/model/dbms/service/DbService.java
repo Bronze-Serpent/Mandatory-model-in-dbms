@@ -8,10 +8,16 @@ import com.barabanov.mandatory.model.dbms.exception.ColumnNotFoundException;
 import com.barabanov.mandatory.model.dbms.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.exception.TableNotFoundException;
 import com.barabanov.mandatory.model.dbms.repository.*;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 
 
@@ -27,15 +33,48 @@ public class DbService
     private final TupleSecurityRepository tupleSecurityRepository;
     private final ValueSecurityRepository valueSecurityRepository;
     private final SecuritySqlParser securitySqlParser;
+    private final JsonFactory jsonFactory;
 
 
-    private void insertIntoDb(Long dbId, String securitySql)
+    public String getDataFromDbAsJson(Long dbId, String sqlSelect) throws IOException
+    {
+        DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
+                .orElseThrow(() -> new DbNotFoundException(dbId));
+
+        SqlRowSet rowSet = dynamicDbManager.executeSqlInDb(dbSecurity.getName(), sqlSelect);
+        SqlRowSetMetaData metaData = rowSet.getMetaData();
+
+        StringWriter stringWriter = new StringWriter();
+        JsonGenerator jsonGenerator = jsonFactory.createGenerator(stringWriter);
+        jsonGenerator.useDefaultPrettyPrinter();
+
+        jsonGenerator.writeStartObject();
+        while (rowSet.next())
+        {
+            for (int columnCounter = 1; columnCounter <= metaData.getColumnCount(); columnCounter++)
+            {
+                jsonGenerator.writeObjectField(
+                        metaData.getColumnName(columnCounter),
+                        rowSet.getObject(columnCounter)
+                );
+            }
+        }
+        jsonGenerator.writeEndObject();
+
+        jsonGenerator.close();
+        String resultJson = stringWriter.toString();
+        stringWriter.close();
+        return resultJson;
+    }
+
+
+    public void insertIntoDb(Long dbId, String securitySql)
     {
         ParsedSecretSqlDto parsedSecretSqlDto = securitySqlParser.parse(securitySql);
 
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));
-        TableSecurity tableSecurity = tableSecurityRepository.findByName(parsedSecretSqlDto.getTableName())
+        TableSecurity tableSecurity = tableSecurityRepository.findByNameInDb(dbSecurity.getId(), parsedSecretSqlDto.getTableName())
                 .orElseThrow(() -> new TableNotFoundException(null, parsedSecretSqlDto.getTableName()));
 
         Long insertedTupleId = dynamicDbManager.insertTuple(dbSecurity.getName(), parsedSecretSqlDto.getSql());
@@ -46,7 +85,7 @@ public class DbService
 
         for (ValueSecurityInfo valueSecurityInfo : parsedSecretSqlDto.getValueSecurityInfoList())
         {
-            ColumnSecurity columnSecurity = columnSecurityRepository.findByName(valueSecurityInfo.getColumnName())
+            ColumnSecurity columnSecurity = columnSecurityRepository.findByNameInTable(tableSecurity.getId(), valueSecurityInfo.getColumnName())
                     .orElseThrow(() -> new ColumnNotFoundException(null, valueSecurityInfo.getColumnName()));
             ValueSecurity valueSecurity = new ValueSecurity(
                     insertedTupleId,

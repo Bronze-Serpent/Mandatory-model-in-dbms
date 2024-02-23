@@ -2,10 +2,16 @@ package com.barabanov.mandatory.model.dbms.repository;
 
 import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
+
 public interface ColumnSecurityRepository extends JpaRepository<ColumnSecurity, Long>
 {
-    Optional<ColumnSecurity> findByName(String columnName);
+    @Query("select c " +
+            "from ColumnSecurity c " +
+            "inner join c.tableSecurity t " +
+            "where t.id = :tableId and c.name = :name")
+    Optional<ColumnSecurity> findByNameInTable(Long tableId, String name);
 }
