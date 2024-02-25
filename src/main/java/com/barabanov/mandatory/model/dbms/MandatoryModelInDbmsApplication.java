@@ -1,6 +1,5 @@
 package com.barabanov.mandatory.model.dbms;
 
-import com.barabanov.mandatory.model.dbms.service.DbService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -15,12 +14,13 @@ public class MandatoryModelInDbmsApplication
 	public static void main(String[] args) throws IOException {
 		ConfigurableApplicationContext context = SpringApplication.run(MandatoryModelInDbmsApplication.class, args);
 
-		DbService dbService = context.getBean(DbService.class);
-		String dataFromDb = dbService.getDataFromDbAsJson(1L, """
-				SELECT * FROM model;
-				""");
+//		DbService dbService = context.getBean(DbService.class);
+//		String dataFromDb = dbService.getDataFromDbAsJson(1L, """
+//				SELECT * FROM model;
+//				""");
+//
+//		System.out.println(dataFromDb);
 
-		System.out.println(dataFromDb);
 		/*dynamicDbManager.createDb("car_db");
 		dynamicDbManager.createTable(
 				"car_db",

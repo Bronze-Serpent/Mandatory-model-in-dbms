@@ -1,13 +1,18 @@
-package com.barabanov.mandatory.model.dbms.repository;
+package com.barabanov.mandatory.model.dbms.database;
 
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -22,13 +27,33 @@ public class DynamicDbManager
     private final Environment environment;
 
 
+    @SuppressWarnings("ConstantConditions")
     public SqlRowSet executeSqlInDb(String dbName, String sql)
     {
         JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
-        SqlRowSet rowSet = dynamicTemplate.query(sql, new SqlRowSetResultSetExtractor());
+        TransactionTemplate dynamicTransTemplate = new TransactionTemplate(new DataSourceTransactionManager(dynamicTemplate.getDataSource()));
+
+        SqlRowSet returnedRowSet = dynamicTransTemplate.execute(status ->
+             dynamicTemplate.query(sql, new SqlRowSetResultSetExtractor())
+        );
+
         closeConnection(dynamicTemplate);
 
-        return rowSet;
+        return returnedRowSet;
+    }
+
+
+    @SuppressWarnings("ConstantConditions")
+    public void deleteTuple(String dbName, String tableName, Long tupleId)
+    {
+        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
+        TransactionTemplate dynamicTransTemplate = new TransactionTemplate(new DataSourceTransactionManager(dynamicTemplate.getDataSource()));
+
+        dynamicTransTemplate.executeWithoutResult(transaction ->
+                dynamicTemplate.execute("DELETE FROM " + tableName + " WHERE id = " + tupleId)
+                );
+
+        closeConnection(dynamicTemplate);
     }
 
 
@@ -36,14 +61,19 @@ public class DynamicDbManager
     public Long insertTuple(String dbName, String insertSql)
     {
         JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
+        TransactionTemplate dynamicTransTemplate = new TransactionTemplate(new DataSourceTransactionManager(dynamicTemplate.getDataSource()));
 
-        String insertSqlReturningId = insertSql.replace(';', ' ') + RETURN_ID_SQL_COMMAND + ';';
+        SqlRowSet returnedRowSet = dynamicTransTemplate.execute(status ->
+        {
+            String insertSqlReturningId = insertSql.replace(';', ' ') + RETURN_ID_SQL_COMMAND + ';';
 
-        SqlRowSet createdIdRowSet = dynamicTemplate.query(insertSqlReturningId, new SqlRowSetResultSetExtractor());
+            return dynamicTemplate.query(insertSqlReturningId, new SqlRowSetResultSetExtractor());
+        });
+
         closeConnection(dynamicTemplate);
 
-        createdIdRowSet.next();
-        return createdIdRowSet.getLong(1);
+        returnedRowSet.next();
+        return returnedRowSet.getLong(1);
     }
 
 

@@ -1,13 +1,13 @@
 package com.barabanov.mandatory.model.dbms.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
 
 @Setter
 @Getter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity

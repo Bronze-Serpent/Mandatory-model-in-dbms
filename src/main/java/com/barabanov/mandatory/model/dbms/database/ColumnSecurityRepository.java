@@ -1,4 +1,4 @@
-package com.barabanov.mandatory.model.dbms.repository;
+package com.barabanov.mandatory.model.dbms.database;
 
 import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,9 +1,8 @@
 package com.barabanov.mandatory.model.dbms.db;
 
-import com.barabanov.mandatory.model.dbms.db.ContainerTestBase;
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
-import com.barabanov.mandatory.model.dbms.repository.DynamicDbManager;
+import com.barabanov.mandatory.model.dbms.database.DynamicDbManager;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
