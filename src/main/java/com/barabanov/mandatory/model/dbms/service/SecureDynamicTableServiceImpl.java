@@ -33,8 +33,8 @@ public class SecureDynamicTableServiceImpl implements SecureDynamicTableService
     @Override
     public void createTableInDb(Long dbId,
                                 String tableName,
-                                SecurityLevel securityLevel,
-                                List<ColumnDesc> columnsDesc)
+                                List<ColumnDesc> columnsDesc,
+                                SecurityLevel securityLevel)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));

@@ -1,5 +1,6 @@
 package com.barabanov.mandatory.model.dbms.db;
 
+import com.barabanov.mandatory.model.dbms.TestApplicationRunner;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -9,7 +10,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(classes = TestApplicationRunner.class)
 public abstract class ContainerTestBase
 {
     private static final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:16.1");

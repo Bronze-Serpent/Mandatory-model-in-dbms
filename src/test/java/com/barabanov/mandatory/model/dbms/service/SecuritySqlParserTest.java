@@ -1,11 +1,11 @@
-package com.barabanov.mandatory.model.dbms;
+package com.barabanov.mandatory.model.dbms.service;
 
 import com.barabanov.mandatory.model.dbms.dto.ParsedSecretSqlDto;
 import com.barabanov.mandatory.model.dbms.dto.ValueSecurityInfo;
-import com.barabanov.mandatory.model.dbms.integration.IntegrationTestBase;
-import com.barabanov.mandatory.model.dbms.service.SecuritySqlParser;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Profile;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -16,15 +16,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 
 
+@Profile("test")
+@SpringBootTest
 @RequiredArgsConstructor
-public class SecuritySqlParserTest extends IntegrationTestBase
+public class SecuritySqlParserTest
 {
     private final SecuritySqlParser securitySqlParser;
 
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void shouldCleanSecuritySql() throws InvocationTargetException, IllegalAccessException {
+    public void shouldCleanSecuritySql() throws InvocationTargetException, IllegalAccessException
+    {
         String securitySql = """
                 INSERT INTO table_1 (col_1, col2, col_3)
                 VALUES ('text_1' - TOP_SECRET, 123 - OF_PARTICULAR_IMPORTANCE, '20.02.2024') -- SECRET;

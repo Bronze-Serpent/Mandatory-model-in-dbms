@@ -75,7 +75,7 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
 
 
     @Override
-    public void insertIntoDb(Long dbId, String securitySql)
+    public Long insertIntoDb(Long dbId, String securitySql)
     {
         ParsedSecretSqlDto parsedSecretSqlDto = securitySqlParser.parse(securitySql);
 
@@ -92,6 +92,8 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
                 tableSecurity,
                 parsedSecretSqlDto.getValueSecurityInfoList()
                 );
+
+        return insertedTupleId;
     }
 
 

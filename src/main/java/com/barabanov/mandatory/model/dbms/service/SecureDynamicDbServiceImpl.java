@@ -9,48 +9,53 @@ import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicDbServic
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class SecureDynamicDbServiceImpl implements SecureDynamicDbService
 {
     private final DynamicDbManager dynamicDbManager;
     private final DbSecurityRepository dbSecurityRepository;
+    private final TransactionTemplate transactionTemplate;
 
 
     @Override
     public void createDb(String dbName, SecurityLevel securityLevel)
     {
         dynamicDbManager.createDb(dbName);
-        DatabaseSecurity createdDbSecurity = DatabaseSecurity.builder()
-                .name(dbName)
-                .securityLevel(securityLevel)
-                .build();
+        transactionTemplate.executeWithoutResult(transaction ->
+        {
+            DatabaseSecurity createdDbSecurity = DatabaseSecurity.builder()
+                    .name(dbName)
+                    .securityLevel(securityLevel)
+                    .build();
 
-        dbSecurityRepository.save(createdDbSecurity);
+            dbSecurityRepository.save(createdDbSecurity);
+        });
     }
 
 
     @Override
+    @Transactional
     public void changeDbSecLvl(Long dbId, SecurityLevel newSecLevel)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));
 
         dbSecurity.setSecurityLevel(newSecLevel);
-        dbSecurityRepository.flush();
     }
 
 
     @Override
     public void deleteDb(Long dbId)
     {
+        // TODO: 25.02.2024 тут нужна транзакция
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId));
 
         dynamicDbManager.dropDb(dbSecurity.getName());
-        dbSecurityRepository.delete(dbSecurity);
+        transactionTemplate.executeWithoutResult(transaction -> dbSecurityRepository.delete(dbSecurity));
     }
 }

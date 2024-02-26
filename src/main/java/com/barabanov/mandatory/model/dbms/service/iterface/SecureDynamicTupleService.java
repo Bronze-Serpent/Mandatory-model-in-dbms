@@ -9,7 +9,7 @@ public interface SecureDynamicTupleService
                                          String sqlSelect,
                                          SecurityLevel securityLevel);
 
-    void insertIntoDb(Long dbId, String securitySql);
+    Long insertIntoDb(Long dbId, String securitySql);
 
     void changeTupleSecLvl(Long tableId,
                       Long tupleId,

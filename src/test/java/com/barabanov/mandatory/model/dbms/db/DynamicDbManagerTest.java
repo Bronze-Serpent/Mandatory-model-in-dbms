@@ -1,15 +1,13 @@
 package com.barabanov.mandatory.model.dbms.db;
 
+import com.barabanov.mandatory.model.dbms.database.DynamicDbManager;
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
-import com.barabanov.mandatory.model.dbms.database.DynamicDbManager;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import java.util.Collections;
@@ -26,7 +24,7 @@ public class DynamicDbManagerTest extends ContainerTestBase
     private final DynamicDbManager dynamicDbManager;
 
     private final EntityManager entityManager;
-    private final Environment environment;
+    private final DynamicDbWorker dynamicDbWorker;
 
 
     @Test
@@ -43,6 +41,7 @@ public class DynamicDbManagerTest extends ContainerTestBase
 
         assertThat(foundedDb).isEqualTo(1);
     }
+
 
     // TODO: 21.02.2024 узнать лучше делать тесты независимыми, но тогда повторно вызывать функционал или же делать их зависимыми,
     //  но не вызывать дополнительный функционал (думаю первое).
@@ -73,11 +72,11 @@ public class DynamicDbManagerTest extends ContainerTestBase
         dynamicDbManager.createDb(dbName);
         dynamicDbManager.createTable(dbName, tableName, Collections.emptyList());
 
-        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
+        JdbcTemplate dynamicTemplate = dynamicDbWorker.createJdbcTemplateFor(dbName);
         SqlRowSet sqlRowSet = dynamicTemplate.query(
                 "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '" + tableName + "') exist;",
                 new SqlRowSetResultSetExtractor());
-        closeConnection(dynamicTemplate);
+        dynamicDbWorker.closeConnection(dynamicTemplate);
 
         sqlRowSet.next();
         assertThat(sqlRowSet.getBoolean("exist")).isTrue();
@@ -95,11 +94,11 @@ public class DynamicDbManagerTest extends ContainerTestBase
         dynamicDbManager.createTable(dbName, tableName, Collections.emptyList());
         dynamicDbManager.dropTable(dbName, tableName);
 
-        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
+        JdbcTemplate dynamicTemplate = dynamicDbWorker.createJdbcTemplateFor(dbName);
         SqlRowSet sqlRowSet = dynamicTemplate.query(
                 "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '" + tableName + "') exist;",
                 new SqlRowSetResultSetExtractor());
-        closeConnection(dynamicTemplate);
+        dynamicDbWorker.closeConnection(dynamicTemplate);
 
         assertThatNoException().isThrownBy(() -> sqlRowSet.next());
         assertThat(sqlRowSet.getBoolean("exist")).isFalse();
@@ -128,11 +127,11 @@ public class DynamicDbManagerTest extends ContainerTestBase
                         .toList()
         );
 
-        JdbcTemplate dynamicTemplate = createJdbcTemplateFor(dbName);
+        JdbcTemplate dynamicTemplate = dynamicDbWorker.createJdbcTemplateFor(dbName);
         SqlRowSet sqlRowSet = dynamicTemplate.query(
                 "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '" + tableName + "';",
                 new SqlRowSetResultSetExtractor());
-        closeConnection(dynamicTemplate);
+        dynamicDbWorker.closeConnection(dynamicTemplate);
 
         while (sqlRowSet.next())
         {
@@ -145,31 +144,4 @@ public class DynamicDbManagerTest extends ContainerTestBase
         }
     }
 
-
-    @SuppressWarnings("ConstantConditions")
-    private JdbcTemplate createJdbcTemplateFor(String dbName)
-    {
-        SingleConnectionDataSource ds = new SingleConnectionDataSource();
-
-        ds.setDriverClassName(environment.getProperty("spring.datasource.driver-class-name"));
-        ds.setUsername(environment.getProperty("spring.datasource.username"));
-        ds.setPassword(environment.getProperty("spring.datasource.password"));
-
-        String currUrl = environment.getProperty("spring.datasource.url");
-
-        int lastSlashIndex = currUrl.lastIndexOf('/');
-        String newUrl = currUrl.substring(0, lastSlashIndex + 1) + dbName;
-        ds.setUrl(newUrl);
-
-        return new JdbcTemplate(ds);
-    }
-
-
-    @SuppressWarnings("ConstantConditions")
-    private void closeConnection(JdbcTemplate template)
-    {
-        SingleConnectionDataSource dataSource = (SingleConnectionDataSource) template.getDataSource();
-
-        dataSource.close();
-    }
 }

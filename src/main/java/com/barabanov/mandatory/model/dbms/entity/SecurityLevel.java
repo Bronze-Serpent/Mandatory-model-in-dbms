@@ -1,5 +1,6 @@
 package com.barabanov.mandatory.model.dbms.entity;
 
+
 public enum SecurityLevel
 {
     NOT_SECRET,

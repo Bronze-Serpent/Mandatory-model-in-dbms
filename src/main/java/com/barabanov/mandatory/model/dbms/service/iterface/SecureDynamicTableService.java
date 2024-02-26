@@ -10,8 +10,8 @@ public interface SecureDynamicTableService
 {
     void createTableInDb(Long dbId,
                          String tableName,
-                         SecurityLevel securityLevel,
-                         List<ColumnDesc> columnsDesc);
+                         List<ColumnDesc> columnsDesc,
+                         SecurityLevel securityLevel);
 
     void createTableInDb(Long dbId,
                          String tableName,
