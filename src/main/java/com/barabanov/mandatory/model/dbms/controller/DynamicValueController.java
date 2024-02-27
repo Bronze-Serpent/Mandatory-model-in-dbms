@@ -1,9 +1,9 @@
 package com.barabanov.mandatory.model.dbms.controller;
 
+import com.barabanov.mandatory.model.dbms.controller.dto.ReadValueSecDto;
 import com.barabanov.mandatory.model.dbms.controller.dto.UpdateValueSecurityDto;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicValService;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicValService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,20 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1/value")
 public class DynamicValueController
 {
-    private final SecureDynamicValService dynamicValService;
+    private final DynamicValService dynamicValService;
 
 
     @PutMapping("/change/lvl")
-    public ResponseEntity<?> changeValueSecLvl(UpdateValueSecurityDto valueSecDto)
+    public ReadValueSecDto changeValueSecLvl(UpdateValueSecurityDto valueSecDto)
     {
-        dynamicValService.changeValueSecLvl(
+        return dynamicValService.changeValueSecLvl(
                 valueSecDto.getTupleId(),
                 valueSecDto.getColumnSecId(),
                 valueSecDto.getSecurityLevel()
         );
-
-        return ResponseEntity
-                .ok()
-                .build();
     }
 }

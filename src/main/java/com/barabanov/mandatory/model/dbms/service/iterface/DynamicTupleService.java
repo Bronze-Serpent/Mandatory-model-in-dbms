@@ -1,9 +1,10 @@
 package com.barabanov.mandatory.model.dbms.service.iterface;
 
+import com.barabanov.mandatory.model.dbms.controller.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 
 
-public interface SecureDynamicTupleService
+public interface DynamicTupleService
 {
     String getDataWithSecurityLvl(
             Long dbId,
@@ -11,9 +12,9 @@ public interface SecureDynamicTupleService
             SecurityLevel securityLevel
     );
 
-    Long insertIntoDb(Long dbId, String securitySql);
+    ReadTupleSecurityDto insertIntoDb(Long dbId, String securitySql);
 
-    void changeTupleSecLvl(
+    ReadTupleSecurityDto changeTupleSecLvl(
             Long tableId,
             Long tupleId,
             SecurityLevel newSecurityLvl

@@ -12,8 +12,8 @@ public interface TupleSecurityRepository extends JpaRepository<TupleSecurity, Lo
     @Query("select t " +
             "from TupleSecurity t " +
             "inner join t.tableSecurity ts " +
-            "where ts.id = :tableId and t.tupleId = :tupleId")
-    Optional<TupleSecurity> findByTupleIdInTable(Long tableId, Long tupleId);
+            "where ts.id = :tableSecId and t.tupleId = :tupleId")
+    Optional<TupleSecurity> findByTupleIdInTable(Long tableSecId, Long tupleId);
 
 
     @Query("delete " +

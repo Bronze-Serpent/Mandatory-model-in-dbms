@@ -1,8 +1,9 @@
 package com.barabanov.mandatory.model.dbms.controller;
 
 import com.barabanov.mandatory.model.dbms.controller.dto.CreateTableDto;
+import com.barabanov.mandatory.model.dbms.controller.dto.ReadTableSecDto;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicTableService;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,41 +15,33 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/table")
 public class DynamicTableController
 {
-    private final SecureDynamicTableService dynamicTableService;
+    private final DynamicTableService dynamicTableService;
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> createTableInDb(@RequestBody CreateTableDto createTableDto)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ReadTableSecDto createTableInDb(@RequestBody CreateTableDto createTableDto)
     {
         if (createTableDto.getSecurityLevel() == null)
-            dynamicTableService.createTableInDb(
+            return dynamicTableService.createTableInDb(
                     createTableDto.getDbSecId(),
                     createTableDto.getTableName(),
                     createTableDto.getColumnsDesc()
             );
-        else
-            dynamicTableService.createTableInDb(
-                    createTableDto.getDbSecId(),
-                    createTableDto.getTableName(),
-                    createTableDto.getColumnsDesc(),
-                    createTableDto.getSecurityLevel()
-            );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
+        return dynamicTableService.createTableInDb(
+                createTableDto.getDbSecId(),
+                createTableDto.getTableName(),
+                createTableDto.getColumnsDesc(),
+                createTableDto.getSecurityLevel()
+        );
     }
 
 
     @PutMapping("/{tableId}")
-    public ResponseEntity<?> changeTableSecLvl(@PathVariable Long tableId,
-                                               @RequestParam SecurityLevel newSecLvl)
+    public ReadTableSecDto changeTableSecLvl(@PathVariable Long tableId,
+                                             @RequestParam SecurityLevel newSecLvl)
     {
-        dynamicTableService.changeTableSecLvl(tableId, newSecLvl);
-
-        return ResponseEntity
-                .ok()
-                .build();
+        return dynamicTableService.changeTableSecLvl(tableId, newSecLvl);
     }
 
 

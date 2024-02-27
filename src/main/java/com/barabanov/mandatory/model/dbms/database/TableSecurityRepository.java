@@ -12,6 +12,6 @@ public interface TableSecurityRepository extends JpaRepository<TableSecurity, Lo
     @Query("select t " +
             "from TableSecurity t " +
             "inner join t.databaseSecurity d " +
-            "where d.id = :dbId and t.name = :tableName")
-    Optional<TableSecurity> findByNameInDb(Long dbId, String tableName);
+            "where d.id = :dbSecId and t.name = :tableName")
+    Optional<TableSecurity> findByNameInDb(Long dbSecId, String tableName);
 }

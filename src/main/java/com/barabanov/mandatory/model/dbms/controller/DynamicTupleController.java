@@ -2,8 +2,9 @@ package com.barabanov.mandatory.model.dbms.controller;
 
 import com.barabanov.mandatory.model.dbms.controller.dto.CreateTupleDto;
 import com.barabanov.mandatory.model.dbms.controller.dto.DeleteTupleDto;
+import com.barabanov.mandatory.model.dbms.controller.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.controller.dto.UpdateTupleSecurityDto;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicTupleService;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTupleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,30 +16,24 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class DynamicTupleController
 {
-    private final SecureDynamicTupleService dynamicTupleService;
+    private final DynamicTupleService dynamicTupleService;
 
 
     @PostMapping("/insert")
-    public ResponseEntity<?> insertTupleIntoDb(CreateTupleDto createTupleDto)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ReadTupleSecurityDto insertTupleIntoDb(CreateTupleDto createTupleDto)
     {
-        dynamicTupleService.insertIntoDb(createTupleDto.getDbSecId(), createTupleDto.getSecureSql());
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
+        return dynamicTupleService.insertIntoDb(createTupleDto.getDbSecId(), createTupleDto.getSecureSql());
     }
 
 
     @PutMapping("/change/lvl")
-    public ResponseEntity<?> changeTupleSecLvl(UpdateTupleSecurityDto updateTupleDto)
+    public ReadTupleSecurityDto changeTupleSecLvl(UpdateTupleSecurityDto updateTupleDto)
     {
-        dynamicTupleService.changeTupleSecLvl(
+        return dynamicTupleService.changeTupleSecLvl(
                 updateTupleDto.getTableSecId(),
                 updateTupleDto.getTupleId(),
                 updateTupleDto.getNewSecurityLvl());
-        return ResponseEntity
-                .ok()
-                .build();
     }
 
 

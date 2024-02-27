@@ -1,5 +1,6 @@
 package com.barabanov.mandatory.model.dbms.service;
 
+import com.barabanov.mandatory.model.dbms.controller.dto.ReadTableSecDto;
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;
 import com.barabanov.mandatory.model.dbms.entity.DatabaseSecurity;
@@ -11,7 +12,8 @@ import com.barabanov.mandatory.model.dbms.database.ColumnSecurityRepository;
 import com.barabanov.mandatory.model.dbms.database.DbSecurityRepository;
 import com.barabanov.mandatory.model.dbms.database.DynamicDbManager;
 import com.barabanov.mandatory.model.dbms.database.TableSecurityRepository;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicTableService;
+import com.barabanov.mandatory.model.dbms.mapper.TableSecurityMapper;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,19 +24,19 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 @Service
-public class SecureDynamicTableServiceImpl implements SecureDynamicTableService
+public class DynamicTableServiceImpl implements DynamicTableService
 {
     private final DynamicDbManager dynamicDbManager;
     private final DbSecurityRepository dbSecurityRepository;
     private final TableSecurityRepository tableSecurityRepository;
     private final ColumnSecurityRepository columnSecurityRepository;
-
+    private final TableSecurityMapper tableSecurityMapper;
 
     @Override
-    public void createTableInDb(Long dbId,
-                                String tableName,
-                                List<ColumnDesc> columnsDesc,
-                                SecurityLevel securityLevel)
+    public ReadTableSecDto createTableInDb(Long dbId,
+                                           String tableName,
+                                           List<ColumnDesc> columnsDesc,
+                                           SecurityLevel securityLevel)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
@@ -47,14 +49,14 @@ public class SecureDynamicTableServiceImpl implements SecureDynamicTableService
                 .build();
         createColumnSecurity(tableSecurity, columnsDesc);
 
-        tableSecurityRepository.save(tableSecurity);
+        return tableSecurityMapper.toDto(tableSecurityRepository.save(tableSecurity));
     }
 
 
     @Override
-    public void createTableInDb(Long dbId,
-                                String tableName,
-                                List<ColumnDesc> columnsDesc)
+    public ReadTableSecDto createTableInDb(Long dbId,
+                                           String tableName,
+                                           List<ColumnDesc> columnsDesc)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
@@ -67,17 +69,19 @@ public class SecureDynamicTableServiceImpl implements SecureDynamicTableService
                 .build();
         createColumnSecurity(tableSecurity, columnsDesc);
 
-        tableSecurityRepository.save(tableSecurity);
+        return tableSecurityMapper.toDto(tableSecurityRepository.save(tableSecurity));
     }
 
 
     @Override
-    public void changeTableSecLvl(Long tableId, SecurityLevel newSecLevel)
+    public ReadTableSecDto changeTableSecLvl(Long tableId, SecurityLevel newSecLevel)
     {
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
 
         tableSecurity.setSecurityLevel(newSecLevel);
+
+        return tableSecurityMapper.toDto(tableSecurityRepository.save(tableSecurity));
     }
 
 

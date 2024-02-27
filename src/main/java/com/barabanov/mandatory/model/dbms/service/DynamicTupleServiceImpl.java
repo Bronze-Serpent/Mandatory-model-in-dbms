@@ -1,5 +1,6 @@
 package com.barabanov.mandatory.model.dbms.service;
 
+import com.barabanov.mandatory.model.dbms.controller.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.database.*;
 import com.barabanov.mandatory.model.dbms.dto.ParsedSecretSqlDto;
 import com.barabanov.mandatory.model.dbms.dto.ValueSecurityInfo;
@@ -8,7 +9,8 @@ import com.barabanov.mandatory.model.dbms.exception.ColumnNotFoundException;
 import com.barabanov.mandatory.model.dbms.exception.ConversionRowSetException;
 import com.barabanov.mandatory.model.dbms.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.exception.TableNotFoundException;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicTupleService;
+import com.barabanov.mandatory.model.dbms.mapper.TupleSecurityMapper;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTupleService;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 @Service
-public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
+public class DynamicTupleServiceImpl implements DynamicTupleService
 {
     private final DynamicDbManager dynamicDbManager;
     private final DbSecurityRepository dbSecurityRepository;
@@ -35,7 +37,7 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
     private final ValueSecurityRepository valueSecurityRepository;
     private final SecuritySqlParser securitySqlParser;
     private final JsonFactory jsonFactory;
-
+    private final TupleSecurityMapper tupleSecurityMapper;
 
     @Override
     public String getDataWithSecurityLvl(Long dbId,
@@ -75,7 +77,7 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
 
 
     @Override
-    public Long insertIntoDb(Long dbId, String securitySql)
+    public ReadTupleSecurityDto insertIntoDb(Long dbId, String securitySql)
     {
         ParsedSecretSqlDto parsedSecretSqlDto = securitySqlParser.parse(securitySql);
 
@@ -86,22 +88,23 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
 
         Long insertedTupleId = dynamicDbManager.insertTuple(dbSecurity.getName(), parsedSecretSqlDto.getSql());
 
-        createSecurityRecords(
+        TupleSecurity tupleSecEntity = createSecurityRecords(
                 parsedSecretSqlDto.getRowSecurityLvl(),
                 insertedTupleId,
                 tableSecurity,
                 parsedSecretSqlDto.getValueSecurityInfoList()
-                );
+        );
 
-        return insertedTupleId;
+        return tupleSecurityMapper.toDto(tupleSecEntity);
     }
 
 
     @Override
-    public void changeTupleSecLvl(Long tableId,
-                                  Long tupleId,
-                                  SecurityLevel newSecurityLvl)
+    public ReadTupleSecurityDto changeTupleSecLvl(Long tableId,
+                                                  Long tupleId,
+                                                  SecurityLevel newSecurityLvl)
     {
+        // TODO: 27.02.2024 можно сделать проверку, если новый уровень безопасности равен уровню безопасности таблицы, то просто удалять запись
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
 
@@ -112,6 +115,8 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
                         .build());
 
         tupleSecurity.setSecurityLevel(newSecurityLvl);
+
+        return tupleSecurityMapper.toDto(tupleSecurity);
     }
 
 
@@ -129,13 +134,14 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
     }
 
 
-    private void createSecurityRecords(SecurityLevel rowSecurityLvl,
+    private TupleSecurity createSecurityRecords(SecurityLevel rowSecurityLvl,
                                        Long insertedTupleId,
                                        TableSecurity tableSecurity,
                                        List<ValueSecurityInfo> valueSecurityInfoList)
     {
+        TupleSecurity tupleSecurity = new TupleSecurity(insertedTupleId, tableSecurity, rowSecurityLvl);
         if (rowSecurityLvl != null)
-            tupleSecurityRepository.save(new TupleSecurity(insertedTupleId, tableSecurity, rowSecurityLvl));
+            tupleSecurityRepository.save(tupleSecurity);
 
         for (ValueSecurityInfo valueSecurityInfo : valueSecurityInfoList)
         {
@@ -148,5 +154,7 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
             );
             valueSecurityRepository.save(valueSecurity);
         }
+
+        return tupleSecurity;
     }
 }

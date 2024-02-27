@@ -3,9 +3,9 @@ package com.barabanov.mandatory.model.dbms.db;
 import com.barabanov.mandatory.model.dbms.database.*;
 import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.entity.*;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicDbService;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicTableService;
-import com.barabanov.mandatory.model.dbms.service.iterface.SecureDynamicTupleService;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicDbService;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTableService;
+import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTupleService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -25,9 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SecureDynamicDatabaseTest extends ContainerTestBase
 {
     private final DynamicDbWorker dynamicDbWorker;
-    private final SecureDynamicDbService secureDynamicDbService;
-    private final SecureDynamicTableService secureDynamicTableService;
-    private final SecureDynamicTupleService secureDynamicTupleService;
+    private final DynamicDbService dynamicDbService;
+    private final DynamicTableService dynamicTableService;
+    private final DynamicTupleService secureDynamicTupleService;
 
     private final DbSecurityRepository dbSecurityRepository;
     private final TableSecurityRepository tableSecurityRepository;
@@ -43,7 +43,7 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
     {
         // создание базы данных
         String dbName = "test_db_1";
-        secureDynamicDbService.createDb(dbName, SECRET);
+        dynamicDbService.createDb(dbName, SECRET);
         DatabaseSecurity db = dbSecurityRepository.findByName(dbName).get();
 
         // проверка создани€ Ѕƒ
@@ -61,14 +61,14 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
                 new ColumnDesc("name", "VARCHAR(45)", List.of("UNIQUE"), TOP_SECRET),
                 new ColumnDesc("id", "BIGSERIAL", List.of("PRIMARY KEY"), null)
         );
-        secureDynamicTableService.createTableInDb(db.getId(), tableName_1, columnsDesc_1);
+        dynamicTableService.createTableInDb(db.getId(), tableName_1, columnsDesc_1);
 
         String tableName_2 = "person";
         List<ColumnDesc> columnsDesc_2 = List.of(
                 new ColumnDesc("name", "VARCHAR(45)", List.of("UNIQUE"), null),
                 new ColumnDesc("id", "BIGSERIAL", List.of("PRIMARY KEY"), null)
         );
-        secureDynamicTableService.createTableInDb(db.getId(), tableName_2, columnsDesc_2, TOP_SECRET);
+        dynamicTableService.createTableInDb(db.getId(), tableName_2, columnsDesc_2, TOP_SECRET);
 
         // проверка создани€ таблиц
         TableSecurity tableSecurity_1 = tableSecurityRepository.findByNameInDb(db.getId(), tableName_1).get();
@@ -107,13 +107,13 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
                 """
                         INSERT INTO car (name)
                         VALUES ('VAZ' - OF_PARTICULAR_IMPORTANCE) -- TOP_SECRET;
-                                """);
+                                """).getTupleId();
 
         Long tuple_2_id = secureDynamicTupleService.insertIntoDb(db.getId(),
                 """
                         INSERT INTO person (name)
                         VALUES ('KALASHNIKOV' - OF_PARTICULAR_IMPORTANCE);
-                                """);
+                                """).getTupleId();
 
         // проверка созданных кортежей
         assertThat(tuple_1_id).isNotNull();
@@ -144,12 +144,12 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
         String dbName = "test_creating_db_1";
         SecurityLevel securityLevel = TOP_SECRET;
 
-        secureDynamicDbService.createDb(dbName, securityLevel);
+        dynamicDbService.createDb(dbName, securityLevel);
         Optional<DatabaseSecurity> first_dbOptional = dbSecurityRepository.findByName(dbName);
         assertThat(first_dbOptional).isNotEmpty();
         DatabaseSecurity first_db = first_dbOptional.get();
 
-        secureDynamicDbService.deleteDb(first_db.getId());
+        dynamicDbService.deleteDb(first_db.getId());
         Optional<DatabaseSecurity> second_db = dbSecurityRepository.findByName(dbName);
         assertThat(second_db).isEmpty();
     }

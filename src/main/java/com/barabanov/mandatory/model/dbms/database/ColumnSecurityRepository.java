@@ -12,6 +12,6 @@ public interface ColumnSecurityRepository extends JpaRepository<ColumnSecurity, 
     @Query("select c " +
             "from ColumnSecurity c " +
             "inner join c.tableSecurity t " +
-            "where t.id = :tableId and c.name = :name")
-    Optional<ColumnSecurity> findByNameInTable(Long tableId, String name);
+            "where t.id = :tableSecId and c.name = :name")
+    Optional<ColumnSecurity> findByNameInTable(Long tableSecId, String name);
 }
