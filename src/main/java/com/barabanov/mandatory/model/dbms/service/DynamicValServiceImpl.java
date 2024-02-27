@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.service;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadValueSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadValueSecDto;
 import com.barabanov.mandatory.model.dbms.database.ColumnSecurityRepository;
 import com.barabanov.mandatory.model.dbms.database.ValueSecurityRepository;
 import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;

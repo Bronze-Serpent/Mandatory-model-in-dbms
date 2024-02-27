@@ -1,4 +1,4 @@
-package com.barabanov.mandatory.model.dbms.controller.dto;
+package com.barabanov.mandatory.model.dbms.service.dto;
 
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import lombok.AccessLevel;

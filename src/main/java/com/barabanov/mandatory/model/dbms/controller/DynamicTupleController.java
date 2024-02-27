@@ -2,7 +2,7 @@ package com.barabanov.mandatory.model.dbms.controller;
 
 import com.barabanov.mandatory.model.dbms.controller.dto.CreateTupleDto;
 import com.barabanov.mandatory.model.dbms.controller.dto.DeleteTupleDto;
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadTupleSecurityDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.controller.dto.UpdateTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTupleService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.service;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadColumnSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadColumnSecDto;
 import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.exception.ColumnNotFoundException;
@@ -19,6 +19,7 @@ public class DynamicColumnServiceImpl implements DynamicColumnService
 {
     private final ColumnSecurityRepository columnSecurityRepository;
     private final ColumnSecurityMapper columnSecurityMapper;
+
 
     @Override
     public ReadColumnSecDto changeColumnSecLvl(Long columnId, SecurityLevel newSecLvl)

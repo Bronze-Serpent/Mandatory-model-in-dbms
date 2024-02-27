@@ -1,7 +1,7 @@
 package com.barabanov.mandatory.model.dbms.controller;
 
 import com.barabanov.mandatory.model.dbms.controller.dto.CreateTableDto;
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadTableSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadTableSecDto;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTableService;
 import lombok.RequiredArgsConstructor;

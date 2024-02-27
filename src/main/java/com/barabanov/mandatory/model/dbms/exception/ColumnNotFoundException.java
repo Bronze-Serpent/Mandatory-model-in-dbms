@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class ColumnNotFoundException extends RuntimeException
+public class ColumnNotFoundException extends DynamicDatabaseNotFoundException
 {
     private final Long columnId;
 

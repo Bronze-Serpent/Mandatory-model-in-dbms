@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class TableNotFoundException extends RuntimeException
+public class TableNotFoundException extends DynamicDatabaseNotFoundException
 {
     private final Long tableId;
 

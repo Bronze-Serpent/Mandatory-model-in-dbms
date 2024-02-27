@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.mapper;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadValueSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadValueSecDto;
 import com.barabanov.mandatory.model.dbms.entity.ValueSecurity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

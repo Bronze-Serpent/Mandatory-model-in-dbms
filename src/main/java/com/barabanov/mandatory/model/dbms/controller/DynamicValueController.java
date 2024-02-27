@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.controller;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadValueSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadValueSecDto;
 import com.barabanov.mandatory.model.dbms.controller.dto.UpdateValueSecurityDto;
 import com.barabanov.mandatory.model.dbms.service.iterface.DynamicValService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.service;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadDbSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadDbSecDto;
 import com.barabanov.mandatory.model.dbms.entity.DatabaseSecurity;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.exception.DbNotFoundException;

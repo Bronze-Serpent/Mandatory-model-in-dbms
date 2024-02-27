@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.controller;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadColumnSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadColumnSecDto;
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.service.iterface.DynamicColumnService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.mapper;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadColumnSecDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadColumnSecDto;
 import com.barabanov.mandatory.model.dbms.entity.ColumnSecurity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

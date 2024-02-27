@@ -6,7 +6,7 @@ import java.io.IOException;
 
 
 @RequiredArgsConstructor
-public class ConversionRowSetException extends RuntimeException
+public class ConversionRowSetException extends DynamicDatabaseNotFoundException
 {
     private final IOException nestedException;
 

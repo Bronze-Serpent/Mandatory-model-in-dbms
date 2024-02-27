@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.mapper;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadTupleSecurityDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.entity.TupleSecurity;
 import org.mapstruct.Mapper;
 

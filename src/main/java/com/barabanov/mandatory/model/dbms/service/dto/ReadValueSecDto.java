@@ -1,4 +1,4 @@
-package com.barabanov.mandatory.model.dbms.controller.dto;
+package com.barabanov.mandatory.model.dbms.service.dto;
 
 import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import lombok.AccessLevel;
@@ -10,10 +10,10 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @Data
-public class ReadTableSecDto
+public class ReadValueSecDto
 {
     Long secId;
-    String name;
+    Long tupleId;
+    Long columnSecId;
     SecurityLevel securityLevel;
-    Long dbSecId;
 }

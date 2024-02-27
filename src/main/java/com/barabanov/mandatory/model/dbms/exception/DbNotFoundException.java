@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class DbNotFoundException extends RuntimeException
+public class DbNotFoundException extends DynamicDatabaseNotFoundException
 {
     private final Long dbId;
     private final String dbName;

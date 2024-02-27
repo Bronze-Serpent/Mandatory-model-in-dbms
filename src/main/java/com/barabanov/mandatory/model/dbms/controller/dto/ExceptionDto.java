@@ -1,19 +1,17 @@
 package com.barabanov.mandatory.model.dbms.controller.dto;
 
-import com.barabanov.mandatory.model.dbms.entity.SecurityLevel;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 
 @Builder
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 @Data
-public class ReadValueSecDto
+public class ExceptionDto
 {
-    Long secId;
-    Long tupleId;
-    Long columnSecId;
-    SecurityLevel securityLevel;
+    String message;
 }

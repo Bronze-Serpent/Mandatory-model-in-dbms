@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.service;
 
-import com.barabanov.mandatory.model.dbms.controller.dto.ReadTupleSecurityDto;
+import com.barabanov.mandatory.model.dbms.service.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.database.*;
 import com.barabanov.mandatory.model.dbms.dto.ParsedSecretSqlDto;
 import com.barabanov.mandatory.model.dbms.dto.ValueSecurityInfo;
