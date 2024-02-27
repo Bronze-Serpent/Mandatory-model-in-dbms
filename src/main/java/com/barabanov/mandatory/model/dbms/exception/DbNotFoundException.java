@@ -7,11 +7,19 @@ import lombok.RequiredArgsConstructor;
 public class DbNotFoundException extends RuntimeException
 {
     private final Long dbId;
+    private final String dbName;
 
 
     @Override
     public String toString()
     {
-        return "Database with id: " + dbId + " not found.";
+        String message = "Database with ";
+        if (dbId != null)
+            message += "id: " + dbId + " ";
+        if (dbName != null)
+            message += "database name: " + dbName;
+        message += "not found.";
+
+        return message;
     }
 }

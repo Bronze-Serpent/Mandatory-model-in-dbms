@@ -41,8 +41,9 @@ public class SecureDynamicDbServiceImpl implements SecureDynamicDbService
     @Transactional
     public void changeDbSecLvl(Long dbId, SecurityLevel newSecLevel)
     {
+
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId));
+                .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
         dbSecurity.setSecurityLevel(newSecLevel);
     }
@@ -51,9 +52,9 @@ public class SecureDynamicDbServiceImpl implements SecureDynamicDbService
     @Override
     public void deleteDb(Long dbId)
     {
-        // TODO: 25.02.2024 тут нужна транзакция
+        // TODO: 25.02.2024 тут нужна транзакция?
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId));
+                .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
         dynamicDbManager.dropDb(dbSecurity.getName());
         transactionTemplate.executeWithoutResult(transaction -> dbSecurityRepository.delete(dbSecurity));

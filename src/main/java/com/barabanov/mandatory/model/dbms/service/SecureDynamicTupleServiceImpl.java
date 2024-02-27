@@ -43,7 +43,7 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
                                          SecurityLevel securityLevel)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId));
+                .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
         SqlRowSet rowSet = dynamicDbManager.executeSqlInDb(dbSecurity.getName(), sqlSelect);
         SqlRowSetMetaData metaData = rowSet.getMetaData();
@@ -80,7 +80,7 @@ public class SecureDynamicTupleServiceImpl implements SecureDynamicTupleService
         ParsedSecretSqlDto parsedSecretSqlDto = securitySqlParser.parse(securitySql);
 
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId));
+                .orElseThrow(() -> new DbNotFoundException(dbId, null));
         TableSecurity tableSecurity = tableSecurityRepository.findByNameInDb(dbSecurity.getId(), parsedSecretSqlDto.getTableName())
                 .orElseThrow(() -> new TableNotFoundException(null, parsedSecretSqlDto.getTableName()));
 

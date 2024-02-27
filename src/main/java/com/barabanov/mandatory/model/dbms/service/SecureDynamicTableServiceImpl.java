@@ -37,7 +37,7 @@ public class SecureDynamicTableServiceImpl implements SecureDynamicTableService
                                 SecurityLevel securityLevel)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId));
+                .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
         dynamicDbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
         TableSecurity tableSecurity = TableSecurity.builder()
@@ -57,7 +57,7 @@ public class SecureDynamicTableServiceImpl implements SecureDynamicTableService
                                 List<ColumnDesc> columnsDesc)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId));
+                .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
         dynamicDbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
         TableSecurity tableSecurity = TableSecurity.builder()
