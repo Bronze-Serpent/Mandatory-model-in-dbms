@@ -1,6 +1,5 @@
 package com.barabanov.mandatory.model.dbms;
 
-import com.barabanov.mandatory.model.dbms.database.DynamicDbManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -14,7 +13,7 @@ public class MandatoryModelInDbmsApplication
 	{
 		ConfigurableApplicationContext context = SpringApplication.run(MandatoryModelInDbmsApplication.class, args);
 
-		DynamicDbManager dbManager = context.getBean(DynamicDbManager.class);
+//		DynamicDbManagerImpl dbManager = context.getBean(DynamicDbManagerImpl.class);
 //		dbManager.createDb("test_4");
 //		dbManager.executeSqlInDb("test_4", "SELECT col FROM table");
 	}

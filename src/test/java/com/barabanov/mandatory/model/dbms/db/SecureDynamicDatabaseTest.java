@@ -1,11 +1,11 @@
 package com.barabanov.mandatory.model.dbms.db;
 
-import com.barabanov.mandatory.model.dbms.database.*;
-import com.barabanov.mandatory.model.dbms.dto.ColumnDesc;
-import com.barabanov.mandatory.model.dbms.entity.*;
-import com.barabanov.mandatory.model.dbms.service.iterface.DynamicDbService;
-import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTableService;
-import com.barabanov.mandatory.model.dbms.service.iterface.DynamicTupleService;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.*;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.*;
+import com.barabanov.mandatory.model.dbms.secure.sql.dto.ColumnDesc;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicDbService;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTableService;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTupleService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -17,7 +17,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import java.util.List;
 import java.util.Optional;
 
-import static com.barabanov.mandatory.model.dbms.entity.SecurityLevel.*;
+import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
