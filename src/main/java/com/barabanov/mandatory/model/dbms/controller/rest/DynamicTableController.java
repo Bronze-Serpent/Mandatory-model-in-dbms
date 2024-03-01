@@ -1,15 +1,19 @@
 package com.barabanov.mandatory.model.dbms.controller.rest;
 
 import com.barabanov.mandatory.model.dbms.controller.rest.dto.CreateTableDto;
+import com.barabanov.mandatory.model.dbms.controller.rest.dto.UpdateTableSecDto;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTableSecDto;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTableService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
+@Validated
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("api/v1/table")
@@ -20,7 +24,7 @@ public class DynamicTableController
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ReadTableSecDto createTableInDb(@RequestBody CreateTableDto createTableDto)
+    public ReadTableSecDto createTableInDb(@Valid @RequestBody CreateTableDto createTableDto)
     {
         if (createTableDto.getSecurityLevel() == null)
             return dynamicTableService.createTableInDb(
@@ -37,16 +41,15 @@ public class DynamicTableController
     }
 
 
-    @PutMapping("/{tableId}")
-    public ReadTableSecDto changeTableSecLvl(@PathVariable Long tableId,
-                                             @RequestParam SecurityLevel newSecLvl)
+    @PutMapping("/security/lvl")
+    public ReadTableSecDto changeTableSecLvl(@Valid @RequestBody UpdateTableSecDto tableSecurityDto)
     {
-        return dynamicTableService.changeTableSecLvl(tableId, newSecLvl);
+        return dynamicTableService.changeTableSecLvl(tableSecurityDto.getTableSecId(), tableSecurityDto.getSecurityLevel());
     }
 
 
     @DeleteMapping("/{tableId}")
-    public ResponseEntity<?> dropTable(@PathVariable Long tableId)
+    public ResponseEntity<?> dropTable(@NotNull @PathVariable Long tableId)
     {
         dynamicTableService.dropTableInDb(tableId);
 

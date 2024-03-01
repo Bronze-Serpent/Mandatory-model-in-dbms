@@ -1,8 +1,9 @@
 package com.barabanov.mandatory.model.dbms.controller.rest;
 
+import com.barabanov.mandatory.model.dbms.controller.rest.dto.UpdateColumnSecDto;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadColumnSecDto;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicColumnService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +16,9 @@ public class DynamicColumnController
     private final DynamicColumnService dynamicColumnService;
 
 
-    @PutMapping("{columnId}")
-    public ReadColumnSecDto changeColumnSecLvl(@PathVariable Long columnId,
-                                               @RequestParam SecurityLevel newColumnSecLvl)
+    @PutMapping("/security/lvl")
+    public ReadColumnSecDto changeColumnSecLvl(@Valid @RequestBody UpdateColumnSecDto columnSecurityDto)
     {
-
-        return dynamicColumnService.changeColumnSecLvl(columnId, newColumnSecLvl);
+        return dynamicColumnService.changeColumnSecLvl(columnSecurityDto.getColumnSecId(), columnSecurityDto.getSecurityLvl());
     }
 }

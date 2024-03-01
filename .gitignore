@@ -33,3 +33,4 @@ build/
 .vscode/
 /.mvn/wrapper/maven-wrapper.jar
 /src/main/resources/заметки
+/src/main/java/com/barabanov/mandatory/model/dbms/MyService.java

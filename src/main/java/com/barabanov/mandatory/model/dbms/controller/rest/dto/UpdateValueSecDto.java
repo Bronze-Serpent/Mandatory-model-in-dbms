@@ -1,21 +1,23 @@
 package com.barabanov.mandatory.model.dbms.controller.rest.dto;
 
-import com.barabanov.mandatory.model.dbms.controller.rest.validation.AvailableDatabaseName;
+import com.barabanov.mandatory.model.dbms.controller.rest.validation.ChangeValueSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 
+@ChangeValueSecurity
 @Data
-@Builder
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class CreateDbDto
+public class UpdateValueSecDto
 {
-    @NotEmpty
-    @AvailableDatabaseName
-    String name;
+    @NotNull
+    Long columnSecId;
+
+    @NotNull
+    Long tupleId;
 
     @NotNull
     SecurityLevel securityLevel;

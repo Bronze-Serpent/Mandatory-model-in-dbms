@@ -3,8 +3,9 @@ package com.barabanov.mandatory.model.dbms.controller.rest;
 import com.barabanov.mandatory.model.dbms.controller.rest.dto.CreateTupleDto;
 import com.barabanov.mandatory.model.dbms.controller.rest.dto.DeleteTupleDto;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTupleSecurityDto;
-import com.barabanov.mandatory.model.dbms.controller.rest.dto.UpdateTupleSecurityDto;
+import com.barabanov.mandatory.model.dbms.controller.rest.dto.UpdateTupleSecDto;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTupleService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +22,14 @@ public class DynamicTupleController
 
     @PostMapping("/insert")
     @ResponseStatus(HttpStatus.CREATED)
-    public ReadTupleSecurityDto insertTupleIntoDb(CreateTupleDto createTupleDto)
+    public ReadTupleSecurityDto insertTupleIntoDb(@Valid @RequestBody CreateTupleDto createTupleDto)
     {
         return dynamicTupleService.insertIntoDb(createTupleDto.getDbSecId(), createTupleDto.getSecureSql());
     }
 
 
-    @PutMapping("/change/lvl")
-    public ReadTupleSecurityDto changeTupleSecLvl(UpdateTupleSecurityDto updateTupleDto)
+    @PutMapping("/security/lvl")
+    public ReadTupleSecurityDto changeTupleSecLvl(@Valid @RequestBody UpdateTupleSecDto updateTupleDto)
     {
         return dynamicTupleService.changeTupleSecLvl(
                 updateTupleDto.getTableSecId(),
@@ -38,7 +39,7 @@ public class DynamicTupleController
 
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteTuple(DeleteTupleDto deleteTupleDto)
+    public ResponseEntity<?> deleteTuple(@Valid @RequestBody DeleteTupleDto deleteTupleDto)
     {
         dynamicTupleService.deleteTupleInTable(deleteTupleDto.getTableSecId(), deleteTupleDto.getTupleId());
 
