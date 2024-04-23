@@ -1,5 +1,6 @@
 package com.barabanov.mandatory.model.dbms.dynamic.db.security.entity;
 
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsAdmin;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
