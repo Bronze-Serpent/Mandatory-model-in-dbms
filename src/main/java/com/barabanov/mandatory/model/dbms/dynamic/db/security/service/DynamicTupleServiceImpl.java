@@ -3,6 +3,7 @@ package com.barabanov.mandatory.model.dbms.dynamic.db.security.service;
 import com.barabanov.mandatory.model.dbms.dynamic.db.manager.DynamicDbManager;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.*;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.*;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.AuthorityChecker;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTupleService;
 import com.barabanov.mandatory.model.dbms.secure.sql.service.SecuritySqlParser;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTupleSecurityDto;
@@ -40,6 +41,8 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
     private final SecuritySqlParser securitySqlParser;
     private final JsonFactory jsonFactory;
     private final TupleSecurityMapper tupleSecurityMapper;
+    private final AuthorityChecker authorityChecker;
+
 
     @Override
     public String getDataWithSecurityLvl(Long dbId,
@@ -110,6 +113,8 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
 
+        authorityChecker.checkCurrentUserForTupleAccess(tableSecurity);
+
         TupleSecurity tupleSecurity = tupleSecurityRepository.findByTupleIdInTable(tableId, tupleId)
                 .orElseGet(() -> TupleSecurity.builder()
                         .tupleId(tupleId)
@@ -127,6 +132,9 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
     {
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
+
+        authorityChecker.checkCurrentUserForTupleAccess(tableSecurity);
+
         dynamicDbManager.deleteTuple(
                 tableSecurity.getDatabaseSecurity().getName(),
                 tableSecurity.getName(),
@@ -159,4 +167,5 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
 
         return tupleSecurity;
     }
+
 }

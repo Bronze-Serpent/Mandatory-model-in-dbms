@@ -8,6 +8,7 @@ import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLev
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.ValueSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.ColumnNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.mapper.ValueSecurityMapper;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.AuthorityChecker;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicValService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,8 +23,10 @@ public class DynamicValServiceImpl implements DynamicValService
     private final ColumnSecurityRepository columnSecurityRepository;
     private final ValueSecurityRepository valueSecurityRepository;
     private final ValueSecurityMapper valueSecurityMapper;
+    private final AuthorityChecker authorityChecker;
 
 
+//    TODO: вообще можно хотя бы sequence проверять для этой БД, чтобы хотя бы несуществующим tuple не изменять уровень секретности.
     @Override
     public ReadValueSecDto changeValueSecLvl(Long tupleId,
                                              Long columnId,
@@ -31,6 +34,8 @@ public class DynamicValServiceImpl implements DynamicValService
     {
         ColumnSecurity columnSecurity = columnSecurityRepository.findById(columnId)
                 .orElseThrow(() -> new ColumnNotFoundException(columnId, null));
+
+        authorityChecker.checkCurrentUserForValueAccess(columnSecurity);
 
         ValueSecurity currValueSecurity = valueSecurityRepository.findByTupleIdAndColumnInTable(tupleId, columnId)
                 .orElseGet(() -> ValueSecurity.builder()
@@ -42,4 +47,5 @@ public class DynamicValServiceImpl implements DynamicValService
 
         return valueSecurityMapper.toDto(valueSecurityRepository.save(currValueSecurity));
     }
+
 }

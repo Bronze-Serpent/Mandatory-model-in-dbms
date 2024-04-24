@@ -3,6 +3,7 @@ package com.barabanov.mandatory.model.dbms.dynamic.db.security.service;
 import com.barabanov.mandatory.model.dbms.dynamic.db.manager.DynamicDbManager;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTableSecDto;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.AuthorityChecker;
 import com.barabanov.mandatory.model.dbms.secure.sql.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.ColumnSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.DatabaseSecurity;
@@ -31,6 +32,8 @@ public class DynamicTableServiceImpl implements DynamicTableService
     private final TableSecurityRepository tableSecurityRepository;
     private final ColumnSecurityRepository columnSecurityRepository;
     private final TableSecurityMapper tableSecurityMapper;
+    private final AuthorityChecker authorityChecker;
+
 
     @Override
     public ReadTableSecDto createTableInDb(Long dbId,
@@ -40,6 +43,8 @@ public class DynamicTableServiceImpl implements DynamicTableService
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
+
+        authorityChecker.checkCurrentUserForChangeDb(dbSecurity);
 
         dynamicDbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
         TableSecurity tableSecurity = TableSecurity.builder()
@@ -61,6 +66,8 @@ public class DynamicTableServiceImpl implements DynamicTableService
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
+        authorityChecker.checkCurrentUserForChangeDb(dbSecurity);
+
         dynamicDbManager.createTable(dbSecurity.getName(), tableName, columnsDesc);
         TableSecurity tableSecurity = TableSecurity.builder()
                 .name(tableName)
@@ -79,6 +86,8 @@ public class DynamicTableServiceImpl implements DynamicTableService
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
 
+        authorityChecker.checkCurrentUserForChangeTable(tableSecurity);
+
         tableSecurity.setSecurityLevel(newSecLevel);
 
         return tableSecurityMapper.toDto(tableSecurityRepository.save(tableSecurity));
@@ -90,6 +99,8 @@ public class DynamicTableServiceImpl implements DynamicTableService
     {
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
+
+        authorityChecker.checkCurrentUserForChangeTable(tableSecurity);
 
         dynamicDbManager.dropTable(tableSecurity.getDatabaseSecurity().getName(), tableSecurity.getName());
 
@@ -112,4 +123,5 @@ public class DynamicTableServiceImpl implements DynamicTableService
             columnSecurityRepository.save(columnSecurity);
         }
     }
+
 }
