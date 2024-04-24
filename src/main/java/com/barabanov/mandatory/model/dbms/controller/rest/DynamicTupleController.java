@@ -20,6 +20,13 @@ public class DynamicTupleController
     private final DynamicTupleService dynamicTupleService;
 
 
+//    @GetMapping("/select")
+//    public String selectFromDynamicDb()
+//    {
+//
+//    }
+
+
     @PostMapping("/insert")
     @ResponseStatus(HttpStatus.CREATED)
     public ReadTupleSecurityDto insertTupleIntoDb(@Valid @RequestBody CreateTupleDto createTupleDto)

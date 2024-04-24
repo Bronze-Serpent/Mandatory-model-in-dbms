@@ -1,12 +1,11 @@
 package com.barabanov.mandatory.model.dbms.dynamic.db.security.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @SuperBuilder
 @Setter
@@ -24,4 +23,8 @@ public class TableSecurity extends AbstractEntity<Long>
     @ManyToOne
     @JoinColumn(name = "database_id")
     DatabaseSecurity databaseSecurity;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "tableSecurity")
+    List<ColumnSecurity> columnSecurities = new ArrayList<>();
 }

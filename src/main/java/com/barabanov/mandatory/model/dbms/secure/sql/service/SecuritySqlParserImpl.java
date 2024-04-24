@@ -1,6 +1,6 @@
 package com.barabanov.mandatory.model.dbms.secure.sql.service;
 
-import com.barabanov.mandatory.model.dbms.secure.sql.dto.ParsedSecretSqlDto;
+import com.barabanov.mandatory.model.dbms.secure.sql.dto.ParsedSecureSqlDto;
 import com.barabanov.mandatory.model.dbms.secure.sql.dto.ValueSecurityInfo;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
 import org.springframework.stereotype.Service;
@@ -19,11 +19,11 @@ public class SecuritySqlParserImpl implements SecuritySqlParser
     private static final String TUPLE_SECURITY_IDENTIFICATION = "--";
 
 
-    public ParsedSecretSqlDto parse(String securitySql)
+    public ParsedSecureSqlDto parse(String securitySql)
     {
         String[] words = securitySql.split(SECURITY_SQL_SPLIT_REGEX);
 
-        return new ParsedSecretSqlDto(
+        return new ParsedSecureSqlDto(
                 words[2],
                 getCleanedSql(securitySql),
                 getValueSecurityList(getColumnNames(words), words),

@@ -16,4 +16,6 @@ public interface AuthorityChecker
     void checkCurrentUserForTupleAccess(TableSecurity tableSecurity);
 
     void checkCurrentUserForValueAccess(ColumnSecurity columnSecurity);
+
+    void checkCurrentUserForSelectOperation(Long dbSecId, String sqlSelect);
 }

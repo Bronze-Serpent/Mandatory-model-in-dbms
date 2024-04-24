@@ -7,7 +7,7 @@ import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.A
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTupleService;
 import com.barabanov.mandatory.model.dbms.secure.sql.service.SecuritySqlParser;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTupleSecurityDto;
-import com.barabanov.mandatory.model.dbms.secure.sql.dto.ParsedSecretSqlDto;
+import com.barabanov.mandatory.model.dbms.secure.sql.dto.ParsedSecureSqlDto;
 import com.barabanov.mandatory.model.dbms.secure.sql.dto.ValueSecurityInfo;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.ColumnNotFoundException;
 import com.barabanov.mandatory.model.dbms.secure.sql.exception.ConversionRowSetException;
@@ -84,20 +84,20 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
     @Override
     public ReadTupleSecurityDto insertIntoDb(Long dbId, String securitySql)
     {
-        ParsedSecretSqlDto parsedSecretSqlDto = securitySqlParser.parse(securitySql);
+        ParsedSecureSqlDto parsedSecureSqlDto = securitySqlParser.parse(securitySql);
 
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
-        TableSecurity tableSecurity = tableSecurityRepository.findByNameInDb(dbSecurity.getId(), parsedSecretSqlDto.getTableName())
-                .orElseThrow(() -> new TableNotFoundException(null, parsedSecretSqlDto.getTableName()));
+        TableSecurity tableSecurity = tableSecurityRepository.findByNameInDb(dbSecurity.getId(), parsedSecureSqlDto.getTableName())
+                .orElseThrow(() -> new TableNotFoundException(null, parsedSecureSqlDto.getTableName()));
 
-        Long insertedTupleId = dynamicDbManager.insertTuple(dbSecurity.getName(), parsedSecretSqlDto.getSql());
+        Long insertedTupleId = dynamicDbManager.insertTuple(dbSecurity.getName(), parsedSecureSqlDto.getSql());
 
         TupleSecurity tupleSecEntity = createSecurityRecords(
-                parsedSecretSqlDto.getRowSecurityLvl(),
+                parsedSecureSqlDto.getRowSecurityLvl(),
                 insertedTupleId,
                 tableSecurity,
-                parsedSecretSqlDto.getValueSecurityInfoList()
+                parsedSecureSqlDto.getValueSecurityInfoList()
         );
 
         return tupleSecurityMapper.toDto(tupleSecEntity);

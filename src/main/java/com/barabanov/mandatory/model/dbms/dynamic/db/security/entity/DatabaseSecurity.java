@@ -35,4 +35,9 @@ public class DatabaseSecurity extends AbstractEntity<Long>
             joinColumns = {@JoinColumn(name = "database_id")},
             inverseJoinColumns = {@JoinColumn(name = "admin_id")})
     private List<DbmsAdmin> admins = new ArrayList<>();
+
+
+    @Builder.Default
+    @OneToMany(mappedBy = "databaseSecurity")
+    private List<TableSecurity> tables = new ArrayList<>();
 }
