@@ -39,45 +39,17 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
     private final TupleSecurityRepository tupleSecurityRepository;
     private final ValueSecurityRepository valueSecurityRepository;
     private final SecuritySqlParser securitySqlParser;
-    private final JsonFactory jsonFactory;
     private final TupleSecurityMapper tupleSecurityMapper;
     private final AuthorityChecker authorityChecker;
 
 
     @Override
-    public String getDataWithSecurityLvl(Long dbId,
-                                         String sqlSelect,
-                                         SecurityLevel securityLevel)
+    public SqlRowSet executeSqlInDb(Long dbId, String sqlSelect)
     {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
-        SqlRowSet rowSet = dynamicDbManager.executeSqlInDb(dbSecurity.getName(), sqlSelect);
-        SqlRowSetMetaData metaData = rowSet.getMetaData();
-
-        try(StringWriter stringWriter = new StringWriter();
-            JsonGenerator jsonGenerator = jsonFactory.createGenerator(stringWriter))
-        {
-            jsonGenerator.useDefaultPrettyPrinter();
-
-            jsonGenerator.writeStartObject();
-            while (rowSet.next())
-            {
-                for (int columnCounter = 1; columnCounter <= metaData.getColumnCount(); columnCounter++)
-                {
-                    jsonGenerator.writeObjectField(
-                            metaData.getColumnName(columnCounter),
-                            rowSet.getObject(columnCounter)
-                    );
-                }
-            }
-            jsonGenerator.writeEndObject();
-            return stringWriter.toString();
-        } catch (IOException e)
-        {
-            throw new ConversionRowSetException(e);
-        }
-
+        return dynamicDbManager.executeSqlInDb(dbSecurity.getName(), sqlSelect);
     }
 
 
