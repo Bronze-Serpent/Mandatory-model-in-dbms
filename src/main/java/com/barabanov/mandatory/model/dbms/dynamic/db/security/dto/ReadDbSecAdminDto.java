@@ -1,18 +1,16 @@
 package com.barabanov.mandatory.model.dbms.dynamic.db.security.dto;
 
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
-import lombok.*;
+import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
 
-@Data
-@AllArgsConstructor
+
 @SuperBuilder
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class ReadDbSecDto
+public class ReadDbSecAdminDto extends ReadDbSecDto
 {
-    Long secId;
-    String name;
-    SecurityLevel securityLevel;
+    Long ownerAdminId;
+    List<Long> adminsId;
 }

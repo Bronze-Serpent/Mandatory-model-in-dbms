@@ -7,7 +7,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 public interface DynamicTupleService
 {
-    SqlRowSet executeSqlInDb(Long dbId, String sqlSelect);
+    String executeSelectInTable(Long tableSecId, String sqlSelect);
 
     ReadTupleSecurityDto insertIntoDb(Long dbId, String securitySql);
 

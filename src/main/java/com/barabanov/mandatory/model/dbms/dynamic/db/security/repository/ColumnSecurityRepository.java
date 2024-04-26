@@ -4,6 +4,7 @@ import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.ColumnSecur
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -14,4 +15,11 @@ public interface ColumnSecurityRepository extends JpaRepository<ColumnSecurity, 
             "inner join c.tableSecurity t " +
             "where t.id = :tableSecId and c.name = :name")
     Optional<ColumnSecurity> findByNameInTable(Long tableSecId, String name);
+
+
+    @Query("select c " +
+            "from ColumnSecurity c " +
+            "inner join c.tableSecurity t " +
+            "where t.id = :tableSecId")
+    List<ColumnSecurity> findAllInTable(Long tableSecId);
 }

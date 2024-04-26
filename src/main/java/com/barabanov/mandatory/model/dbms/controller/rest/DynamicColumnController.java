@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RequiredArgsConstructor
 @RequestMapping("api/v1/column")
@@ -14,6 +16,13 @@ import org.springframework.web.bind.annotation.*;
 public class DynamicColumnController
 {
     private final DynamicColumnService dynamicColumnService;
+
+
+    @GetMapping("/{tableId}")
+    public List<ReadColumnSecDto> getAllColumnsForUser(@PathVariable Long tableId)
+    {
+        return dynamicColumnService.getListOfColumnsInTable(tableId);
+    }
 
 
     @PutMapping("/security/lvl")

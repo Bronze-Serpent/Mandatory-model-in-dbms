@@ -9,6 +9,9 @@ import java.util.List;
 
 public interface DynamicTableService
 {
+
+    List<ReadTableSecDto> getListOfTablesInDb(Long dbSecId);
+
     ReadTableSecDto createTableInDb(Long dbId,
                                     String tableName,
                                     List<ColumnDesc> columnsDesc,

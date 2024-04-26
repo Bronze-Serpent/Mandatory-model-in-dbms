@@ -2,6 +2,7 @@ package com.barabanov.mandatory.model.dbms.dynamic.db.security.service;
 
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.ColumnSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.DatabaseSecurity;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.TableSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsAdmin;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsUser;
@@ -41,8 +42,9 @@ public class AuthorityCheckerImpl implements AuthorityChecker
     {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         @SuppressWarnings("all") // поскольку user получается из БД при формировании authentication его не может не быть
-        DbmsUser user = userRepository.findByLogin(authentication.getName()).get();
-        int userImportantLvl = user.getSecurityLevel().getImportantLvl();
+        int userImportantLvl = userRepository.findSecurityLevelByLogin(authentication.getName())
+                .get()
+                .getImportantLvl();
 
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbSecId)
                 .orElseThrow(() -> new DbNotFoundException(dbSecId, null));
@@ -162,7 +164,8 @@ public class AuthorityCheckerImpl implements AuthorityChecker
     }
 
 
-    private void checkAdminLinkWithDb(String login, TableSecurity tableSecurity)
+    @Override
+    public void checkAdminLinkWithDb(String login, TableSecurity tableSecurity)
     {
         DatabaseSecurity dbSecurity = tableSecurity.getDatabaseSecurity();
 
@@ -174,7 +177,8 @@ public class AuthorityCheckerImpl implements AuthorityChecker
     }
 
 
-    private void checkAdminLinkWithDb(String login, DatabaseSecurity dbSecurity)
+    @Override
+    public void checkAdminLinkWithDb(String login, DatabaseSecurity dbSecurity)
     {
         if (!(dbSecurity.getOwner().getLogin().equals(login) ||
                 dbSecurity.getAdmins().stream()
@@ -182,4 +186,5 @@ public class AuthorityCheckerImpl implements AuthorityChecker
                         .anyMatch(adminLogin -> adminLogin.equals(login))))
             throw new DbNotFoundException(dbSecurity.getId(), null);
     }
+
 }

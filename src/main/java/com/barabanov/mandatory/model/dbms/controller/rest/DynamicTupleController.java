@@ -2,6 +2,7 @@ package com.barabanov.mandatory.model.dbms.controller.rest;
 
 import com.barabanov.mandatory.model.dbms.controller.rest.dto.CreateTupleDto;
 import com.barabanov.mandatory.model.dbms.controller.rest.dto.DeleteTupleDto;
+import com.barabanov.mandatory.model.dbms.controller.rest.dto.ExecuteSelectDto;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.controller.rest.dto.UpdateTupleSecDto;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTupleService;
@@ -20,11 +21,12 @@ public class DynamicTupleController
     private final DynamicTupleService dynamicTupleService;
 
 
-//    @GetMapping("/select")
-//    public String selectFromDynamicDb()
-//    {
-//
-//    }
+    @GetMapping("/select")
+    public String selectFromDynamicDbForUser(ExecuteSelectDto executeSelectDto)
+    {
+        return dynamicTupleService.executeSelectInTable(executeSelectDto.getTableId(),
+                executeSelectDto.getSelectSql());
+    }
 
 
     @PostMapping("/insert")

@@ -1,8 +1,10 @@
 package com.barabanov.mandatory.model.dbms.dynamic.db.security.service;
 
 import com.barabanov.mandatory.model.dbms.dynamic.db.manager.DynamicDbManager;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsUser;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTableSecDto;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.UserRepository;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.AuthorityChecker;
 import com.barabanov.mandatory.model.dbms.secure.sql.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.ColumnSecurity;
@@ -16,10 +18,16 @@ import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.TableSe
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.mapper.TableSecurityMapper;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTableService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.Authority.ADMIN;
+import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.Authority.USER;
 
 
 @RequiredArgsConstructor
@@ -33,6 +41,35 @@ public class DynamicTableServiceImpl implements DynamicTableService
     private final ColumnSecurityRepository columnSecurityRepository;
     private final TableSecurityMapper tableSecurityMapper;
     private final AuthorityChecker authorityChecker;
+    private final SecretDataEraserImpl secretDataEraser;
+    private final UserRepository userRepository;
+
+
+    @Override
+    public List<ReadTableSecDto> getListOfTablesInDb(Long dbSecId)
+    {
+        DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbSecId)
+                .orElseThrow(() -> new DbNotFoundException(dbSecId, null));
+
+        List<ReadTableSecDto> allTablesInDb = tableSecurityRepository.findAllInDb(dbSecId).stream()
+                .map(tableSecurityMapper::toDto)
+                .collect(Collectors.toList());
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getAuthorities().contains(USER))
+        {
+            @SuppressWarnings("all") // поскольку при создании authentication такой же запрос в БД user не может не быть.
+            SecurityLevel userSecLvl = userRepository.findSecurityLevelByLogin(authentication.getName()).get();
+            return secretDataEraser.eraseTablesAccordingToSecurityLvl(allTablesInDb, userSecLvl);
+        }
+        else
+        {
+            if (authentication.getAuthorities().contains(ADMIN))
+                authorityChecker.checkAdminLinkWithDb(authentication.getName(), dbSecurity);
+
+            return allTablesInDb;
+        }
+    }
 
 
     @Override

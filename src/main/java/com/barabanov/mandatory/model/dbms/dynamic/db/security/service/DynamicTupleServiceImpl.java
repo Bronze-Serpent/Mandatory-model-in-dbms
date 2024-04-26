@@ -5,6 +5,8 @@ import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.*;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.*;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.AuthorityChecker;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTupleService;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.SecretDataEraser;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.SqlRowSetConverter;
 import com.barabanov.mandatory.model.dbms.secure.sql.service.SecuritySqlParser;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTupleSecurityDto;
 import com.barabanov.mandatory.model.dbms.secure.sql.dto.ParsedSecureSqlDto;
@@ -19,12 +21,17 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
+
+import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.Authority.ADMIN;
+import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.Authority.USER;
 
 
 @RequiredArgsConstructor
@@ -38,18 +45,39 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
     private final ColumnSecurityRepository columnSecurityRepository;
     private final TupleSecurityRepository tupleSecurityRepository;
     private final ValueSecurityRepository valueSecurityRepository;
+    private final UserRepository userRepository;
     private final SecuritySqlParser securitySqlParser;
     private final TupleSecurityMapper tupleSecurityMapper;
     private final AuthorityChecker authorityChecker;
+    private final SecretDataEraser secretDataEraser;
+    private final SqlRowSetConverter sqlRowSetConverter;
+
 
 
     @Override
-    public SqlRowSet executeSqlInDb(Long dbId, String sqlSelect)
+    public String executeSelectInTable(Long tableSecId, String sqlSelect)
     {
-        DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
-                .orElseThrow(() -> new DbNotFoundException(dbId, null));
+        TableSecurity tableSecurity = tableSecurityRepository.findById(tableSecId)
+                .orElseThrow(() -> new TableNotFoundException(tableSecId, null));
+        Long dbId = tableSecurity.getDatabaseSecurity().getId();
 
-        return dynamicDbManager.executeSqlInDb(dbSecurity.getName(), sqlSelect);
+        authorityChecker.checkCurrentUserForSelectOperation(dbId, sqlSelect);
+        SqlRowSet sqlRowSet = executeSqlInDb(dbId, sqlSelect);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getAuthorities().contains(USER))
+        {
+            @SuppressWarnings("all") // поскольку при создании authentication такой же запрос в БД user не может не быть.
+            SecurityLevel userSecLvl = userRepository.findSecurityLevelByLogin(authentication.getName()).get();
+            return secretDataEraser.eraseRowSetAccordingToSecurityLvl(tableSecId, sqlRowSet, userSecLvl);
+        }
+        else
+            if (authentication.getAuthorities().contains(ADMIN))
+            {
+                authorityChecker.checkAdminLinkWithDb(authentication.getName(), tableSecurity);
+                return sqlRowSetConverter.convertToJson(sqlRowSet);
+            }
+        return null;
     }
 
 
@@ -113,6 +141,15 @@ public class DynamicTupleServiceImpl implements DynamicTupleService
                 tupleId);
 
         tupleSecurityRepository.deleteByTupleId(tupleId);
+    }
+
+
+    private SqlRowSet executeSqlInDb(Long dbId, String sqlSelect)
+    {
+        DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
+                .orElseThrow(() -> new DbNotFoundException(dbId, null));
+
+        return dynamicDbManager.executeSqlInDb(dbSecurity.getName(), sqlSelect);
     }
 
 

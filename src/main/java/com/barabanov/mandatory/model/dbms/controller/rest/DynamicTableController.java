@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @Validated
 @RequiredArgsConstructor
@@ -20,6 +22,13 @@ import org.springframework.web.bind.annotation.*;
 public class DynamicTableController
 {
     private final DynamicTableService dynamicTableService;
+
+
+    @GetMapping("/{dbId}")
+    public List<ReadTableSecDto> getAllTablesForUser(@PathVariable Long dbId)
+    {
+        return dynamicTableService.getListOfTablesInDb(dbId);
+    }
 
 
     @PostMapping("/create")
