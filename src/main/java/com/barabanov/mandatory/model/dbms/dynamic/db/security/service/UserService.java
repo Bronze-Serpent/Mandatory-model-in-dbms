@@ -1,9 +1,14 @@
 package com.barabanov.mandatory.model.dbms.dynamic.db.security.service;
 
+import com.barabanov.mandatory.model.dbms.controller.rest.dto.CreateUserDto;
+import com.barabanov.mandatory.model.dbms.controller.rest.dto.UserReadDto;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.Authority;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsAdmin;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsUser;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.mapper.UserMapper;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.AbstractUserRepository;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.AdminRepository;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +28,9 @@ public class UserService implements UserDetailsService
 {
 
     private final AbstractUserRepository abstractUserRepository;
+    private final AdminRepository adminRepository;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
 
     @Override
@@ -47,5 +55,23 @@ public class UserService implements UserDetailsService
                             Collections.singleton(authority));
                 })
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь под login: " + username + " не найден."));
+    }
+
+
+    public UserReadDto createUser(CreateUserDto createUserDto)
+    {
+        if (createUserDto.getAuthority() == USER)
+        {
+            DbmsUser user = userMapper.toUser(createUserDto);
+            return userMapper.toUserDto(userRepository.save(user));
+        }
+        else
+            if (createUserDto.getAuthority() == ADMIN)
+            {
+                DbmsAdmin admin = userMapper.toAdmin(createUserDto);
+                return userMapper.toUserDto(adminRepository.save(admin));
+            }
+            else
+                throw new RuntimeException("Нельзя создать ещё одного пользователя с пролью SUPER_USER");
     }
 }
