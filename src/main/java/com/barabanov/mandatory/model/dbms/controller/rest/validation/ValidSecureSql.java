@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 
 @Constraint(validatedBy = SecureSqlValidator.class)
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidSecureSql
 {

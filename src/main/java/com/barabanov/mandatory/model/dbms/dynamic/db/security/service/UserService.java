@@ -14,10 +14,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.Authority.*;
 
@@ -31,6 +31,7 @@ public class UserService implements UserDetailsService
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -54,12 +55,14 @@ public class UserService implements UserDetailsService
                             abstractUser.getPassword(),
                             Collections.singleton(authority));
                 })
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь под login: " + username + " не найден."));
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь с login: " + username + " не найден."));
     }
 
 
     public UserReadDto createUser(CreateUserDto createUserDto)
     {
+        createUserDto.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
+
         if (createUserDto.getAuthority() == USER)
         {
             DbmsUser user = userMapper.toUser(createUserDto);
@@ -72,6 +75,6 @@ public class UserService implements UserDetailsService
                 return userMapper.toUserDto(adminRepository.save(admin));
             }
             else
-                throw new RuntimeException("Нельзя создать ещё одного пользователя с пролью SUPER_USER");
+                throw new RuntimeException("Нельзя создать ещё одного пользователя с ролью SUPER_USER");
     }
 }

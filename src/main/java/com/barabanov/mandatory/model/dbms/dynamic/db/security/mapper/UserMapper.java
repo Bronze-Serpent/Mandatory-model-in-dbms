@@ -14,6 +14,7 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 public interface UserMapper
 {
 
+    @Mapping(target = "id", ignore = true)
     DbmsUser toUser(CreateUserDto createUserDto);
 
     @Mapping(target = "databases", ignore = true)
@@ -24,7 +25,5 @@ public interface UserMapper
     UserReadDto toUserDto(DbmsUser user);
 
     @Mapping(target = "authority", constant = "ADMIN")
-    @Mapping(target = "accessLevel", ignore = true)
     UserReadDto toUserDto(DbmsAdmin admin);
-
 }

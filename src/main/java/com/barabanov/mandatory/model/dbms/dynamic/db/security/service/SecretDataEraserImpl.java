@@ -9,6 +9,7 @@ import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLev
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsAdmin;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.ColumnSecurityRepository;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.TupleSecurityRepository;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.ValueSecurityRepository;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.SecretDataEraser;
 import com.barabanov.mandatory.model.dbms.secure.sql.exception.ConversionRowSetException;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -34,7 +35,7 @@ public class SecretDataEraserImpl implements SecretDataEraser
 
     private final JsonFactory jsonFactory;
     private final TupleSecurityRepository tupleSecurityRepository;
-    private final ColumnSecurityRepository columnSecurityRepository;
+    private final ValueSecurityRepository valueSecurityRepository;
 
 
 // Получается, что данный метод И секретные данные затирает И преобразует их в json. Лучше бы чтобы он только затирал,
@@ -54,9 +55,8 @@ public class SecretDataEraserImpl implements SecretDataEraser
             jsonGenerator.writeStartArray();
             while (rowSet.next())
             {
-                if (!isThereAccessToTuple(tableSecId,
-                        rowSet.getLong(ID_IN_A_DYNAMIC_DATABASE),
-                        securityLevel))
+                Long tupleId = rowSet.getLong(ID_IN_A_DYNAMIC_DATABASE);
+                if (!isThereAccessToTuple(tableSecId, tupleId, securityLevel))
                     continue;
 
                 jsonGenerator.writeStartObject();
@@ -64,7 +64,7 @@ public class SecretDataEraserImpl implements SecretDataEraser
                 {
                     String columnName = metaData.getColumnName(columnCounter);
                     Object columnVal = null;
-                    if (isThereAccessToColumn(tableSecId, columnName, securityLevel))
+                    if (isThereAccessToValue(tupleId, columnName, securityLevel))
                         columnVal = rowSet.getObject(columnCounter);
 
                     jsonGenerator.writeObjectField(columnName, columnVal);
@@ -129,16 +129,16 @@ public class SecretDataEraserImpl implements SecretDataEraser
     private boolean isThereAccessToTuple(Long tableSecId, Long tupleId, SecurityLevel securityLevel)
     {
         return tupleSecurityRepository.findByTupleIdInTable(tableSecId, tupleId)
-                .map(tupleSecurity -> tupleSecurity.getSecurityLevel().getImportantLvl() < securityLevel.getImportantLvl())
-                .orElse(false);
+                .map(tupleSecurity -> tupleSecurity.getSecurityLevel().getImportantLvl() <= securityLevel.getImportantLvl())
+                .orElse(true);
     }
 
 
-    private boolean isThereAccessToColumn(Long tableSecId, String columnName, SecurityLevel securityLevel)
+    private boolean isThereAccessToValue(Long tupleId, String columnName, SecurityLevel securityLevel)
     {
-        return columnSecurityRepository.findByNameInTable(tableSecId, columnName)
-                .map(columnSecurity -> columnSecurity.getSecurityLevel().getImportantLvl() > securityLevel.getImportantLvl())
-                .orElse(false);
+        return valueSecurityRepository.findByTupleIdAndColumnName(tupleId, columnName)
+                .map(valueSecurity -> valueSecurity.getSecurityLevel().getImportantLvl() <= securityLevel.getImportantLvl())
+                .orElse(true);
     }
 
 }

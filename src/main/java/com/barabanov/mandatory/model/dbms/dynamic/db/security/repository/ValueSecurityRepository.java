@@ -13,5 +13,12 @@ public interface ValueSecurityRepository extends JpaRepository<ValueSecurity, Lo
             "from ValueSecurity v " +
             "inner join v.columnSecurity c " +
             "where v.tupleId = :tupleId and c.id = :columnSecId")
-    Optional<ValueSecurity> findByTupleIdAndColumnInTable(Long tupleId, Long columnSecId);
+    Optional<ValueSecurity> findByTupleAndColumnId(Long tupleId, Long columnSecId);
+
+    @Query("select v " +
+            "from ValueSecurity v " +
+            "inner join v.columnSecurity c " +
+            "where v.tupleId = :tupleId and " +
+            "c.name = :columnName")
+    Optional<ValueSecurity> findByTupleIdAndColumnName(Long tupleId, String columnName);
 }

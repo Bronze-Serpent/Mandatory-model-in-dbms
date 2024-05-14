@@ -3,14 +3,10 @@ spring:
         url: jdbc:postgresql://localhost:5432/mandatory_model_in_dbms
         username: postgres
         password: postgres
-#        driver-class-name: org.postgresql.Driver
+        driver-class-name: org.postgresql.Driver
     jpa:
         hibernate:
             ddl-auto: validate
-
-
-        properties:
-            hibernate:
-                show_sql=true:#logging:
+        show-sql: true
 #    level:
 #        org.springframework.web: TRACE

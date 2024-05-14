@@ -37,7 +37,7 @@ public class DynamicValServiceImpl implements DynamicValService
 
         authorityChecker.checkCurrentUserForValueAccess(columnSecurity);
 
-        ValueSecurity currValueSecurity = valueSecurityRepository.findByTupleIdAndColumnInTable(tupleId, columnId)
+        ValueSecurity currValueSecurity = valueSecurityRepository.findByTupleAndColumnId(tupleId, columnId)
                 .orElseGet(() -> ValueSecurity.builder()
                         .tupleId(tupleId)
                         .columnSecurity(columnSecurity)

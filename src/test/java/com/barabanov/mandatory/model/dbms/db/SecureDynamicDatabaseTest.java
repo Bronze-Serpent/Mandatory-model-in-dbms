@@ -41,12 +41,12 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
     @Test
     public void shouldCreateDatabaseWithTablesAndData()
     {
-        // создание базы данных
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         String dbName = "test_db_1";
         dynamicDbService.createDb(dbName, SECRET);
         DatabaseSecurity db = dbSecurityRepository.findByName(dbName).get();
 
-        // проверка создания БД
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
         assertThat(db.getName()).isEqualTo(dbName);
         assertThat(db.getSecurityLevel()).isEqualTo(SECRET);
         Integer foundedDb = (Integer) entityManager.createNativeQuery(
@@ -55,7 +55,7 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
                 .getSingleResult();
         AssertionsForClassTypes.assertThat(foundedDb).isEqualTo(1);
 
-        // создание таблиц
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         String tableName_1 = "car";
         List<ColumnDesc> columnsDesc_1 = List.of(
                 new ColumnDesc("name", "VARCHAR(45)", List.of("UNIQUE"), TOP_SECRET),
@@ -70,7 +70,7 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
         );
         dynamicTableService.createTableInDb(db.getId(), tableName_2, columnsDesc_2, TOP_SECRET);
 
-        // проверка создания таблиц
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         TableSecurity tableSecurity_1 = tableSecurityRepository.findByNameInDb(db.getId(), tableName_1).get();
         assertThat(tableSecurity_1.getName()).isEqualTo(tableName_1);
         assertThat(tableSecurity_1.getSecurityLevel()).isEqualTo(SECRET);
@@ -85,7 +85,7 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
         tableRowSet.next();
         assertThat(tableRowSet.getBoolean(1)).isTrue();
 
-        // проверка создания колонок
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         ColumnSecurity column_1_1 = columnSecurityRepository.findByNameInTable(tableSecurity_1.getId(), "name").get();
         assertThat(column_1_1.getSecurityLevel()).isEqualTo(TOP_SECRET);
         ColumnSecurity column_1_2 = columnSecurityRepository.findByNameInTable(tableSecurity_1.getId(), "id").get();
@@ -102,7 +102,7 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
         assertThat(columnRowSet_1.getBoolean(1)).isTrue();
         assertThat(columnRowSet_2.getBoolean(1)).isTrue();
 
-        // создание кортежей
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         Long tuple_1_id = secureDynamicTupleService.insertIntoDb(db.getId(),
                 """
                         INSERT INTO car (name)
@@ -115,17 +115,17 @@ public class SecureDynamicDatabaseTest extends ContainerTestBase
                         VALUES ('KALASHNIKOV' - OF_PARTICULAR_IMPORTANCE);
                                 """).getTupleId();
 
-        // проверка созданных кортежей
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         assertThat(tuple_1_id).isNotNull();
         TupleSecurity tupleSecurity_1 = tupleSecurityRepository.findByTupleIdInTable(tableSecurity_1.getId(), tuple_1_id).get();
         assertThat(tupleSecurity_1.getSecurityLevel()).isEqualTo(TOP_SECRET);
 
-        // проверка созданных значений
-        ValueSecurity vaz_val_sec = valueSecurityRepository.findByTupleIdAndColumnInTable(tuple_1_id, column_1_1.getId()).get();
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        ValueSecurity vaz_val_sec = valueSecurityRepository.findByTupleAndColumnId(tuple_1_id, column_1_1.getId()).get();
         assertThat(vaz_val_sec.getSecurityLevel()).isEqualTo(OF_PARTICULAR_IMPORTANCE);
 
         ColumnSecurity columnSecurity_2_1 = columnSecurityRepository.findByNameInTable(tableSecurity_2.getId(), "name").get();
-        ValueSecurity kalashnikov_val_sec = valueSecurityRepository.findByTupleIdAndColumnInTable(tuple_2_id, columnSecurity_2_1.getId()).get();
+        ValueSecurity kalashnikov_val_sec = valueSecurityRepository.findByTupleAndColumnId(tuple_2_id, columnSecurity_2_1.getId()).get();
         assertThat(kalashnikov_val_sec.getSecurityLevel()).isEqualTo(OF_PARTICULAR_IMPORTANCE);
         SqlRowSet carTuplesRowSet = dbJdbcTemplate.query("""
                         SELECT name

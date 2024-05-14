@@ -5,7 +5,7 @@
 CREATE TABLE abstract_user (
    id              BIGSERIAL        PRIMARY KEY,
    login           VARCHAR(64)      UNIQUE,
-   password        VARCHAR(128)     NOT NULL
+   password        VARCHAR(255)     NOT NULL
 );
 
 --changeset barabanov:super_user
