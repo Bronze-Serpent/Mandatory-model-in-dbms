@@ -2,10 +2,8 @@ package com.barabanov.mandatory.model.dbms.dynamic.db.security.service;
 
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.ColumnSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.DatabaseSecurity;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.TableSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsAdmin;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsUser;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.CanNotChangeDbSchemaException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.ColumnNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.DbNotFoundException;
@@ -30,16 +28,14 @@ import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class AuthorityCheckerImpl implements AuthorityChecker
-{
+public class AuthorityCheckerImpl implements AuthorityChecker {
     private final UserRepository userRepository;
     private final DbSecurityRepository dbSecurityRepository;
     private final SqlParser sqlParser;
-    
+
 
     @Override
-    public void checkCurrentUserForSelectOperation(Long dbSecId, String sqlSelect)
-    {
+    public void checkCurrentUserForSelectOperation(Long dbSecId, String sqlSelect) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         @SuppressWarnings("all") // поскольку user получается из БД при формировании authentication его не может не быть
         int userImportantLvl = userRepository.findSecurityLevelByLogin(authentication.getName())
@@ -49,8 +45,7 @@ public class AuthorityCheckerImpl implements AuthorityChecker
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbSecId)
                 .orElseThrow(() -> new DbNotFoundException(dbSecId, null));
 
-        if (authentication.getAuthorities().contains(USER))
-        {
+        if (authentication.getAuthorities().contains(USER)) {
             if (dbSecurity.getSecurityLevel().getImportantLvl() > userImportantLvl)
                 throw new DbNotFoundException(dbSecId, null);
 
@@ -60,28 +55,26 @@ public class AuthorityCheckerImpl implements AuthorityChecker
                     .filter(tableSec -> parsedSqlDto.getParsedFromSentence().contains(tableSec.getName()))
                     .toList();
             usedTables.forEach(tableSec -> {
-                        if (tableSec.getSecurityLevel().getImportantLvl() > userImportantLvl)
-                            throw new TableNotFoundException(null, tableSec.getName());
-                    });
+                if (tableSec.getSecurityLevel().getImportantLvl() > userImportantLvl)
+                    throw new TableNotFoundException(null, tableSec.getName());
+            });
+
             usedTables.stream()
                     .flatMap(tableSecurity -> tableSecurity.getColumnSecurities().stream())
+                    .filter(columnSecurity -> parsedSqlDto.getParsedSelectSentence().contains(columnSecurity.getName()))
                     .forEach(columnSec -> {
                         if (columnSec.getSecurityLevel().getImportantLvl() > userImportantLvl)
                             throw new ColumnNotFoundException(null, columnSec.getName());
                     });
-        }
-        else
-            if (authentication.getAuthorities().contains(ADMIN))
-                checkAdminLinkWithDb(authentication.getName(), dbSecurity);
+        } else if (authentication.getAuthorities().contains(ADMIN))
+            checkAdminLinkWithDb(authentication.getName(), dbSecurity);
     }
 
 
     @Override
-    public void checkCurrentUserForChangeDb(DatabaseSecurity dbSecurity)
-    {
+    public void checkCurrentUserForChangeDb(DatabaseSecurity dbSecurity) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.getAuthorities().contains(ADMIN))
-        {
+        if (authentication.getAuthorities().contains(ADMIN)) {
             String login = authentication.getName();
 
             if (!(dbSecurity.getOwner().getLogin().equals(login) ||
@@ -98,11 +91,9 @@ public class AuthorityCheckerImpl implements AuthorityChecker
 
 
     @Override
-    public void checkCurrentUserForChangeTable(TableSecurity tableSecurity)
-    {
+    public void checkCurrentUserForChangeTable(TableSecurity tableSecurity) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.getAuthorities().contains(ADMIN))
-        {
+        if (authentication.getAuthorities().contains(ADMIN)) {
             String login = authentication.getName();
             DatabaseSecurity dbSecurity = tableSecurity.getDatabaseSecurity();
 
@@ -116,11 +107,9 @@ public class AuthorityCheckerImpl implements AuthorityChecker
 
 
     @Override
-    public void checkCurrentUserForChangeColumn(ColumnSecurity columnSecurity)
-    {
+    public void checkCurrentUserForChangeColumn(ColumnSecurity columnSecurity) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.getAuthorities().contains(ADMIN))
-        {
+        if (authentication.getAuthorities().contains(ADMIN)) {
             String login = authentication.getName();
             DatabaseSecurity dbSecurity = columnSecurity.getTableSecurity().getDatabaseSecurity();
 
@@ -134,8 +123,7 @@ public class AuthorityCheckerImpl implements AuthorityChecker
 
 
     @Override
-    public void checkCurrentUserForTupleAccess(TableSecurity tableSecurity)
-    {
+    public void checkCurrentUserForTupleAccess(TableSecurity tableSecurity) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getAuthorities().contains(ADMIN))
             checkAdminLinkWithDb(authentication.getName(), tableSecurity);
@@ -143,17 +131,15 @@ public class AuthorityCheckerImpl implements AuthorityChecker
 
 
     @Override
-    public void checkCurrentUserForValueAccess(ColumnSecurity columnSecurity)
-    {
+    public void checkCurrentUserForValueAccess(ColumnSecurity columnSecurity) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getAuthorities().contains(ADMIN))
             checkAdminLinkWithDb(authentication.getName(), columnSecurity);
     }
 
 
-//TODO: checkAdminLinkWithDb можно переписать как 1 обобщённый метод.
-    private void checkAdminLinkWithDb(String login, ColumnSecurity columnSecurity)
-    {
+    //TODO: checkAdminLinkWithDb можно переписать как 1 обобщённый метод.
+    private void checkAdminLinkWithDb(String login, ColumnSecurity columnSecurity) {
         DatabaseSecurity dbSecurity = columnSecurity.getTableSecurity().getDatabaseSecurity();
 
         if (!(dbSecurity.getOwner().getLogin().equals(login) ||
@@ -165,8 +151,7 @@ public class AuthorityCheckerImpl implements AuthorityChecker
 
 
     @Override
-    public void checkAdminLinkWithDb(String login, TableSecurity tableSecurity)
-    {
+    public void checkAdminLinkWithDb(String login, TableSecurity tableSecurity) {
         DatabaseSecurity dbSecurity = tableSecurity.getDatabaseSecurity();
 
         if (!(dbSecurity.getOwner().getLogin().equals(login) ||
@@ -178,8 +163,7 @@ public class AuthorityCheckerImpl implements AuthorityChecker
 
 
     @Override
-    public void checkAdminLinkWithDb(String login, DatabaseSecurity dbSecurity)
-    {
+    public void checkAdminLinkWithDb(String login, DatabaseSecurity dbSecurity) {
         if (!(dbSecurity.getOwner().getLogin().equals(login) ||
                 dbSecurity.getAdmins().stream()
                         .map(DbmsAdmin::getLogin)

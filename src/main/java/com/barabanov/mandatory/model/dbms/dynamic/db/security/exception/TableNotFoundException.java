@@ -18,7 +18,7 @@ public class TableNotFoundException extends DynamicDatabaseNotFoundException
             message += "id: " + tableId + " ";
         if (tableName != null)
             message += "columnName: " + tableName;
-        message += "not found.";
+        message += " not found.";
 
         return message;
     }

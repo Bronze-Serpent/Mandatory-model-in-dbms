@@ -1,22 +1,21 @@
 package com.barabanov.mandatory.model.dbms.dynamic.db.security.service;
 
 import com.barabanov.mandatory.model.dbms.dynamic.db.manager.DynamicDbManager;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user.DbmsUser;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTableSecDto;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.UserRepository;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.AuthorityChecker;
-import com.barabanov.mandatory.model.dbms.secure.sql.dto.ColumnDesc;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.ColumnSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.DatabaseSecurity;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.SecurityLevel;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.TableSecurity;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.TableNotFoundException;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.mapper.TableSecurityMapper;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.ColumnSecurityRepository;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.DbSecurityRepository;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.TableSecurityRepository;
-import com.barabanov.mandatory.model.dbms.dynamic.db.security.mapper.TableSecurityMapper;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.repository.UserRepository;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.AuthorityChecker;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.service.iterface.DynamicTableService;
+import com.barabanov.mandatory.model.dbms.secure.sql.dto.ColumnDesc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,8 +32,7 @@ import static com.barabanov.mandatory.model.dbms.dynamic.db.security.entity.user
 @RequiredArgsConstructor
 @Transactional
 @Service
-public class DynamicTableServiceImpl implements DynamicTableService
-{
+public class DynamicTableServiceImpl implements DynamicTableService {
     private final DynamicDbManager dynamicDbManager;
     private final DbSecurityRepository dbSecurityRepository;
     private final TableSecurityRepository tableSecurityRepository;
@@ -46,8 +44,7 @@ public class DynamicTableServiceImpl implements DynamicTableService
 
 
     @Override
-    public List<ReadTableSecDto> getListOfTablesInDb(Long dbSecId)
-    {
+    public List<ReadTableSecDto> getListOfTablesInDb(Long dbSecId) {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbSecId)
                 .orElseThrow(() -> new DbNotFoundException(dbSecId, null));
 
@@ -56,14 +53,14 @@ public class DynamicTableServiceImpl implements DynamicTableService
                 .collect(Collectors.toList());
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.getAuthorities().contains(USER))
-        {
+        if (authentication.getAuthorities().contains(USER)) {
             @SuppressWarnings("all") // поскольку при создании authentication такой же запрос в БД user не может не быть.
             SecurityLevel userSecLvl = userRepository.findSecurityLevelByLogin(authentication.getName()).get();
+            if (userSecLvl.getImportantLvl() < dbSecurity.getSecurityLevel().getImportantLvl())
+                throw new DbNotFoundException(dbSecId, null);
+
             return secretDataEraser.eraseTablesAccordingToSecurityLvl(allTablesInDb, userSecLvl);
-        }
-        else
-        {
+        } else {
             if (authentication.getAuthorities().contains(ADMIN))
                 authorityChecker.checkAdminLinkWithDb(authentication.getName(), dbSecurity);
 
@@ -76,8 +73,7 @@ public class DynamicTableServiceImpl implements DynamicTableService
     public ReadTableSecDto createTableInDb(Long dbId,
                                            String tableName,
                                            List<ColumnDesc> columnsDesc,
-                                           SecurityLevel securityLevel)
-    {
+                                           SecurityLevel securityLevel) {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
@@ -98,8 +94,7 @@ public class DynamicTableServiceImpl implements DynamicTableService
     @Override
     public ReadTableSecDto createTableInDb(Long dbId,
                                            String tableName,
-                                           List<ColumnDesc> columnsDesc)
-    {
+                                           List<ColumnDesc> columnsDesc) {
         DatabaseSecurity dbSecurity = dbSecurityRepository.findById(dbId)
                 .orElseThrow(() -> new DbNotFoundException(dbId, null));
 
@@ -118,8 +113,7 @@ public class DynamicTableServiceImpl implements DynamicTableService
 
 
     @Override
-    public ReadTableSecDto changeTableSecLvl(Long tableId, SecurityLevel newSecLevel)
-    {
+    public ReadTableSecDto changeTableSecLvl(Long tableId, SecurityLevel newSecLevel) {
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
 
@@ -132,8 +126,7 @@ public class DynamicTableServiceImpl implements DynamicTableService
 
 
     @Override
-    public void dropTableInDb(Long tableId)
-    {
+    public void dropTableInDb(Long tableId) {
         TableSecurity tableSecurity = tableSecurityRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException(tableId, null));
 
@@ -145,10 +138,8 @@ public class DynamicTableServiceImpl implements DynamicTableService
     }
 
 
-    private void createColumnSecurity(TableSecurity tableSecurity, List<ColumnDesc> columnsDesc)
-    {
-        for (ColumnDesc columnDesc : columnsDesc)
-        {
+    private void createColumnSecurity(TableSecurity tableSecurity, List<ColumnDesc> columnsDesc) {
+        for (ColumnDesc columnDesc : columnsDesc) {
             ColumnSecurity columnSecurity = new ColumnSecurity();
             columnSecurity.setName(columnDesc.getName());
             columnSecurity.setTableSecurity(tableSecurity);

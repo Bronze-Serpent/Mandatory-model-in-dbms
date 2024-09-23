@@ -17,8 +17,8 @@ public class ColumnNotFoundException extends DynamicDatabaseNotFoundException
         if (columnId != null)
             message += "id: " + columnId + " ";
         if (columnName != null)
-            message += "columnName: " + columnName;
-        message += "not found.";
+            message += "name: " + columnName;
+        message += " not found.";
 
         return message;
     }
