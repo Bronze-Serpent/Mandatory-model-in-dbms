@@ -22,7 +22,7 @@ public class ChangeValueSecurityValidator implements ConstraintValidator<ChangeV
     {
         if (value.getSecurityLevel() == null)
             return false;
-
+        // TODO: 03.03.2024 если нет записи об уровне секретности кортежа, то работать будет неправильно
         Optional<TupleSecurity> tupleSecOptional = tupleSecurityRepository.findById(value.getTupleId());
         return tupleSecOptional
                 .filter(tupleSec -> value.getSecurityLevel().getImportantLvl() >= tupleSec.getSecurityLevel().getImportantLvl())

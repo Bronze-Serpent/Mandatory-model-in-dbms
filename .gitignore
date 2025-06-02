@@ -32,5 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 /.mvn/wrapper/maven-wrapper.jar
-/src/main/resources/заметки
+/src/main/resources/пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /src/main/java/com/barabanov/mandatory/model/dbms/MyService.java
+/out/
+/src/main/resources/Р·Р°РјРµС‚РєРё

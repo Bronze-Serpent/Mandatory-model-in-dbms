@@ -1,4 +1,4 @@
-package com.barabanov.mandatory.model.dbms.secure.sql.exception;
+package com.barabanov.mandatory.model.dbms.dynamic.db.security.exception;
 
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.DynamicDatabaseNotFoundException;
 import lombok.RequiredArgsConstructor;
