@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class CreateTupleDto implements SecureSqlContainer
+public class CreateTupleDto
 {
     @NotNull
     Long dbSecId;

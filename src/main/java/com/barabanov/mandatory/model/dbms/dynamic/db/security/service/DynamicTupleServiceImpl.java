@@ -9,7 +9,7 @@ import com.barabanov.mandatory.model.dbms.dynamic.db.security.dto.ReadTupleSecur
 import com.barabanov.mandatory.model.dbms.secure.sql.dto.ParsedSecretSqlDto;
 import com.barabanov.mandatory.model.dbms.secure.sql.dto.ValueSecurityInfo;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.ColumnNotFoundException;
-import com.barabanov.mandatory.model.dbms.secure.sql.exception.ConversionRowSetException;
+import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.ConversionRowSetException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.DbNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.exception.TableNotFoundException;
 import com.barabanov.mandatory.model.dbms.dynamic.db.security.mapper.TupleSecurityMapper;
